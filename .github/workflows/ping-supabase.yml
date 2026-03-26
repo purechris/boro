@@ -1,0 +1,47 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  # Definiere den Zeitplan (Cron-Syntax)
+  # Beispiel: Führt den Job jeden Montag und Donnerstag um 09:00 Uhr UTC aus.
+  schedule:
+    - cron: '0 9 * * 1,4'
+  
+  # Erlaube manuelles Auslösen über die GitHub-Oberfläche
+  workflow_dispatch:
+
+jobs:
+  ping_db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Wähle eine aktuelle Node.js-Version
+
+      - name: Install Supabase Client
+        run: npm install @supabase/supabase-js
+
+      - name: Run Supabase Ping Query
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Führe ein kleines Node.js-Skript aus, das die Datenbank abfragt.
+          node -e "
+            const { createClient } = require('@supabase/supabase-js');
+            const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+            async function ping() {
+              const { error } = await supabase.from('lendables').select('id').limit(1);
+              if (error) {
+                console.error('Ping failed:', error);
+                process.exit(1);
+              }
+              console.log('Supabase successfully pinged!');
+            }
+            ping();
+          "

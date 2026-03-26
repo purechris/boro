@@ -1,0 +1,85 @@
+name: Build App Bundle
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: 'stable'
+
+      - name: Create Supabase config
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+            echo "ERROR: SUPABASE_URL secret is not set"; exit 1
+          fi
+          if [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+            echo "ERROR: SUPABASE_ANON_KEY secret is not set"; exit 1
+          fi
+          if [ -z "${{ secrets.DEMO_EMAIL }}" ]; then
+            echo "ERROR: DEMO_EMAIL secret is not set"; exit 1
+          fi
+          if [ -z "${{ secrets.DEMO_PASSWORD }}" ]; then
+            echo "ERROR: DEMO_PASSWORD secret is not set"; exit 1
+          fi
+          {
+            echo "class SupabaseConfig {"
+            echo "  static const String url = '${{ secrets.SUPABASE_URL }}';"
+            echo "  static const String anonKey = '${{ secrets.SUPABASE_ANON_KEY }}';"
+            echo "  static const String demoEmail = '${{ secrets.DEMO_EMAIL }}';"
+            echo "  static const String demoPassword = '${{ secrets.DEMO_PASSWORD }}';"
+            echo "}"
+          } > lib/config/supabase_config.dart
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Create key.properties file
+        run: |
+          echo "storeFile=${{ secrets.KEYSTORE_FILE_NAME }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/${{ secrets.KEYSTORE_FILE_NAME }}
+
+      - name: Build App Bundle
+        run: flutter build appbundle --release
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-bundle
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+

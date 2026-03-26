@@ -1,0 +1,25 @@
+{
+    "git": {
+      "deploymentEnabled": {
+        "develop": false
+      }
+    },
+    "rewrites": [
+      {
+        "source": "/auth/reset/(.*)",
+        "destination": "/auth/reset/index.html"
+      },
+      {
+        "source": "/impressum/(.*)",
+        "destination": "/impressum/index.html"
+      },
+      {
+        "source": "/datenschutz/(.*)",
+        "destination": "/datenschutz/index.html"
+      },
+      {
+        "source": "/(.*)",
+        "destination": "/index.html"
+      }
+    ]
+  }

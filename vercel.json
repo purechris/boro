@@ -1,0 +1,28 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "installCommand": "echo skip",
+    "buildCommand": "chmod +x build.sh && ./build.sh",
+    "git": {
+      "deploymentEnabled": {
+        "develop": true
+      }
+    },
+    "rewrites": [
+      {
+        "source": "/auth/reset/(.*)",
+        "destination": "/auth/reset/index.html"
+      },
+      {
+        "source": "/impressum/(.*)",
+        "destination": "/impressum/index.html"
+      },
+      {
+        "source": "/datenschutz/(.*)",
+        "destination": "/datenschutz/index.html"
+      },
+      {
+        "source": "/(.*)",
+        "destination": "/index.html"
+      }
+    ]
+  }
