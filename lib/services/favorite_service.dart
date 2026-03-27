@@ -53,12 +53,11 @@ class FavoriteService {
     }
   }
 
-  // Lade die Artikel des aktuell eingeloggten Benutzers und seiner Freunde (wird auf der Startseite verwendet)
+  // Lade die Favoriten des aktuell eingeloggten Benutzers
   Future<List<Map<LendableModel, UserModel>>> getFavorites() async {
     try {
       final response = await _db.rpc(
         'get_favorite_lendables_with_users',
-        params: {'p_user_id': _currentUserId},
       );
 
       return (response as List).map((item) {

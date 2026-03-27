@@ -150,8 +150,7 @@ class LendableService {
   /// Function: get_lendables_with_user_data
   Future<List<Map<LendableModel, UserModel>>> getLendablesForStartPage() async {
     try {
-      final currentUserId = _userService.getCurrentUserId();
-      final response = await _db.rpc(AppConstants.rpcGetLendablesForStartPage, params: {'p_user_id': currentUserId});
+      final response = await _db.rpc(AppConstants.rpcGetLendablesForStartPage);
 
       List<Map<LendableModel, UserModel>> result = (response as List).map((item) {
         LendableModel lendable = LendableModel.fromDatabaseFunction(item);
@@ -178,7 +177,7 @@ class LendableService {
   /// Function: get_lendables_from_specific_user
   Future<List<Map<LendableModel, UserModel>>> fetchLendablesForSpecificUser(String userId) async {
     try {
-      final response = await _db.rpc(AppConstants.rpcGetLendablesFromSpecificUser, params: {'p_user_id': userId});
+      final response = await _db.rpc(AppConstants.rpcGetLendablesFromSpecificUser);
 
       List<Map<LendableModel, UserModel>> result = (response as List).map((item) {
         LendableModel lendable = LendableModel.fromDatabaseFunction(item);
@@ -198,9 +197,8 @@ class LendableService {
   /// Function: get_lendables_for_public_profile
   Future<List<Map<LendableModel, UserModel>>> fetchLendablesForPublicProfile(String userId) async {
     try {
-      final currentUserId = _userService.getCurrentUserId();
       final response = await _db.rpc(AppConstants.rpcGetLendablesForPublicProfile, 
-        params: {'p_user_id': userId, 'p_viewer_id': currentUserId});
+        params: {'p_user_id': userId});
 
       List<Map<LendableModel, UserModel>> result = (response as List).map((item) {
         LendableModel lendable = LendableModel.fromDatabaseFunction(item);
@@ -217,10 +215,8 @@ class LendableService {
   /// Fetch all items shared with a specific group.
   Future<List<Map<LendableModel, UserModel>>> fetchGroupLendables(String groupId) async {
     try {
-      final currentUserId = _userService.getCurrentUserId();
       final response = await _db.rpc(AppConstants.rpcGetLendablesForGroup, params: {
         'p_group_id': groupId,
-        'p_viewer_id': currentUserId,
       });
 
       List<Map<LendableModel, UserModel>> result = (response as List).map((item) {
