@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:verleihapp/models/group_model.dart';
 import 'package:verleihapp/services/group_service.dart';
 import 'package:verleihapp/services/user_service.dart';
