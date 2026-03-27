@@ -55,41 +55,23 @@ class GroupService {
     }
   }
 
-  /// Creates a new group and adds the creator as admin.
-  Future<GroupModel> createGroup({
+  /// Creates a new group.
+  Future<bool> createGroup({
     required String name,
     String? description,
     String? icon,
-    required String adminId,
   }) async {
     try {
-      // 1. Insert group (group_code is generated via trigger)
-      final groupResponse = await _db
+      await _db
           .from('groups')
           .insert({
             'name': name,
             'description': description,
             'icon': icon,
             'created': DateTime.now().toUtc().toIso8601String(),
-          })
-          .select()
-          .single();
+          });
 
-      final groupId = groupResponse['id'] as String;
-
-      // 2. Add creator as admin
-      await _db.from('group_members').insert({
-        'group_id': groupId,
-        'user_id': adminId,
-        'role': 'admin',
-        'joined_at': DateTime.now().toUtc().toIso8601String(),
-      });
-
-      // Inject role for the returned model
-      final groupData = Map<String, dynamic>.from(groupResponse);
-      groupData['currentUserRole'] = 'admin';
-
-      return GroupModel.fromJson(groupData);
+      return true;
     } catch (e) {
       throw Exception('Error creating group: $e');
     }

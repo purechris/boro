@@ -182,14 +182,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           SnackbarUtils.showSuccess(context, l10n.groupUpdatedSuccess);
         }
       } else {
-        final userId = Supabase.instance.client.auth.currentUser?.id;
-        if (userId == null) throw Exception('User not logged in');
-
         await _groupService.createGroup(
           name: name,
           description: _descriptionController.text.trim(),
           icon: _selectedIcon.codePoint.toString(),
-          adminId: userId,
         );
         if (mounted) {
           SnackbarUtils.showSuccess(context, l10n.groupCreated);
