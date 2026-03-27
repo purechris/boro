@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:verleihapp/models/group_model.dart';
 import 'package:verleihapp/services/group_service.dart';
 import 'package:verleihapp/services/user_service.dart';
@@ -182,14 +181,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           SnackbarUtils.showSuccess(context, l10n.groupUpdatedSuccess);
         }
       } else {
-        final userId = Supabase.instance.client.auth.currentUser?.id;
-        if (userId == null) throw Exception('User not logged in');
-
         await _groupService.createGroup(
           name: name,
           description: _descriptionController.text.trim(),
           icon: _selectedIcon.codePoint.toString(),
-          adminId: userId,
         );
         if (mounted) {
           SnackbarUtils.showSuccess(context, l10n.groupCreated);
