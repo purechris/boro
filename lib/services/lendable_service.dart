@@ -11,8 +11,6 @@ class LendableService {
   final UserService _userService = UserService();
   final FileService _fileService = FileService();
 
-  final testList = [{LendableModel.getTestLendable(): UserModel.getTestUser()}];
-
   /// Add a new item to the lendable collection.
   Future<String> addLendable(LendableModel lendable) async {
     try {

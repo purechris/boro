@@ -108,59 +108,41 @@ class GroupService {
     }
   }
 
-  /// Joins a group using a group code.
-  Future<void> joinGroup(String code, String userId) async {
+  /// Joins a group using a group code via RPC function.
+  Future<String?> joinGroupByCode(String code) async {
     try {
-      // Normalize code: remove spaces and hyphens
-      final normalizedCode = code.toUpperCase().replaceAll(' ', '').replaceAll('-', '');
+      final response = await _db.rpc(
+        'join_group_by_code',
+        params: {'p_group_code': code},
+      );
+
+      final responseList = response as List;
+      if (responseList.isEmpty) {
+        throw Exception('Error joining group');
+      }
       
-      // Group codes are stored as XXX-XXX in the database (6 characters + hyphen)
-      if (normalizedCode.length != 6) {
-        throw Exception('Invalid group code format. Expected 6 characters.');
+      final result = responseList.first as Map<String, dynamic>;
+      final success = result['success'] as bool?;
+      
+      if (success != true) {
+        final message = result['message'] as String?;
+        throw Exception(message ?? 'Error joining group');
       }
 
-      final searchCode = '${normalizedCode.substring(0, 3)}-${normalizedCode.substring(3, 6)}';
-
-      // 1. Find group by code (always using the hyphenated version)
-      final groupResponse = await _db
-          .from('groups')
-          .select()
-          .eq('group_code', searchCode)
-          .maybeSingle();
-
-      if (groupResponse == null) {
-        throw Exception('Group with this code not found');
-      }
-
-      final groupId = groupResponse['id'] as String;
-      await _memberJoinLogic(groupId, userId);
+      return result['group_id'] as String?;
     } catch (e) {
-      if (e is Exception) rethrow;
       throw Exception('Error joining group: $e');
     }
   }
 
-  /// Internal helper for join logic after group is found
-  Future<void> _memberJoinLogic(String groupId, String userId) async {
-    // 2. Check if already a member
-    final existingMember = await _db
-        .from('group_members')
-        .select()
-        .eq('group_id', groupId)
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    if (existingMember != null) {
-      throw Exception('You are already a member of this group');
+  /// Joins a group using a group code.
+  Future<void> joinGroup(String code, String userId) async {
+    try {
+      await joinGroupByCode(code);
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Error joining group: $e');
     }
-
-    // 3. Join group
-    await _db.from('group_members').insert({
-      'group_id': groupId,
-      'user_id': userId,
-      'role': 'member',
-      'joined_at': DateTime.now().toUtc().toIso8601String(),
-    });
   }
 
   /// Removes a member from a group (leaves or kicks).

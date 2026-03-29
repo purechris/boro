@@ -168,7 +168,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         city: _locationController.text,
         telephone: _contactController.text,
         imageUrl: newImageUrl,
-        email: currentUser.email,
         created: currentUser.created,
         friendCode: currentUser.friendCode,
         countryCode: _selectedCountryCode,

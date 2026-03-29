@@ -65,18 +65,6 @@ class UserService {
     }
   }
 
-  /// Load a user by their email address.
-  Future<UserModel?> getUserByEmail(String email) async {
-    try {
-      final normalizedEmail = email.toLowerCase().trim();
-      final response = await _db.from('profiles').select().eq('email', normalizedEmail).maybeSingle();
-      if (response == null) throw Exception(_userNotFoundError);
-      return UserModel.fromJson(response, response['id']);
-    } catch (e) {
-      throw Exception('$_userError: $e');
-    }
-  }
-
   /// Load a user by their friend code.
   Future<UserModel?> getUserByFriendCode(String friendCode) async {
     try {

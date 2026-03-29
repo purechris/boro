@@ -95,7 +95,6 @@ class AuthService {
 
     final userModel = UserModel(
       id: user.id,
-      email: email,
       firstName: firstName,
       created: DateTime.now(),
     );

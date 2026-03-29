@@ -2,7 +2,6 @@ class UserModel {
   final String? id;
   final String firstName;
   final String? lastName;
-  final String email;
   final String? city;
   final DateTime created;
   final String? description;
@@ -18,7 +17,6 @@ class UserModel {
   UserModel({
     this.id,
     required this.firstName,
-    required this.email,
     this.lastName,
     this.city,
     required this.created,
@@ -37,7 +35,6 @@ class UserModel {
     return UserModel(
       id: id,
       firstName: json['first_name'] as String,
-      email: json['email'] as String,
       city: json['city'] != null ? json['city'] as String : null,
       created: DateTime.parse(json['created'] as String).toLocal(),
       description: json['description'] != null ? json['description'] as String : null,
@@ -56,7 +53,6 @@ class UserModel {
     return UserModel(
       id: json['user_id']?.toString() ?? '',
       firstName: json['creator_name']?.toString() ?? '',
-      email: '',
       city: json['creator_city']?.toString(),
       created: DateTime.now(),
       description: '',
@@ -73,13 +69,12 @@ class UserModel {
     final Map<String, dynamic> data = {
       'id': id,
       'first_name': firstName,
-      'email': email,
-      'city': city, // Stadt zum JSON hinzufügen
-      'created': created.toUtc().toIso8601String(), // Erstellungsdatum als String in UTC
-      'description': description, // Beschreibung zum JSON hinzufügen
-      'image_url': imageUrl, // Bild-URL zum JSON hinzufügen
-      'telephone': telephone, // Telefonnummer zum JSON hinzufügen
-      'friend_code': friendCode, // Freundescode zum JSON hinzufügen
+      'city': city,
+      'created': created.toUtc().toIso8601String(),
+      'description': description,
+      'image_url': imageUrl,
+      'telephone': telephone,
+      'friend_code': friendCode,
       'country_code': countryCode,
       'postal_code': postalCode,
       'latitude': latitude,
@@ -87,21 +82,6 @@ class UserModel {
     };
 
     return data;
-  }
-
-  static UserModel getTestUser() {
-    return UserModel(
-      id: 'djsakdjkajk423432',
-      firstName: 'Max',
-      lastName: 'Mustermann',
-      email: 'cbandroid97@gmail.com',
-      city: 'Berlin',
-      created: DateTime.now(),
-      description: 'Dies ist ein Testbenutzer für Debugging-Zwecke.',
-      imageUrl: '',
-      telephone: '+491234567890',
-      friendCode: 'AC23-AC23',
-    );
   }
 
   static double? _parseDouble(dynamic value) {
