@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:verleihapp/config/constants.dart';
 import 'package:verleihapp/models/friend_request_model.dart';
 import 'package:verleihapp/models/user_model.dart';
 import 'package:verleihapp/pages/public_profile.dart';
@@ -28,7 +27,7 @@ class _FriendListPageState extends State<FriendlistPage> with SingleTickerProvid
   // State
   late Future<FriendListData> _dataFuture = _getData();
   late TabController _tabController;
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _friendCodeController = TextEditingController();
   UserModel? _currentUser;
 
   @override
@@ -93,7 +92,7 @@ class _FriendListPageState extends State<FriendlistPage> with SingleTickerProvid
               onRefresh: _handleRefresh,
             ),
             AddFriendTab(
-              emailController: _emailController,
+              emailController: _friendCodeController,
               currentUser: _currentUser,
               isDemoUser: _userService.isDemoUser(),
               dataFuture: _dataFuture,
@@ -254,69 +253,34 @@ class _FriendListPageState extends State<FriendlistPage> with SingleTickerProvid
   }
 
   Future<void> _sendFriendRequest() async {
-    final input = _emailController.text.trim();
+    final input = _friendCodeController.text.trim();
     if (input.isEmpty) {
       return;
     }
 
     try {
-      final currentUser = await _userService.getCurrentUser();
-      if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      if (currentUser == null) {
-        SnackbarUtils.showError(context, l10n.errorOccurred);
-        return;
-      }
 
-      UserModel? receiverUser;
-
-      // Prüfe, ob es ein Freundescode ist (Format: XX##-XX## oder XX##XX##)
+      // Check if the input is a friend code (Format: XX##-XX## or XX##XX##)
       final normalizedInput = input.toUpperCase().replaceAll(' ', '').replaceAll('-', '');
       final isFriendCode = normalizedInput.length == 8 && 
                           RegExp(r'^[A-Z]{2}\d{2}[A-Z]{2}\d{2}$').hasMatch(normalizedInput);
       
-      if (isFriendCode) {
-        // Suche nach Freundescode
-        receiverUser = await _userService.getUserByFriendCode(input);
-        if (!mounted) return;
-        if (receiverUser == null) {
-          SnackbarUtils.showError(context, l10n.userNotFoundByFriendCode);
-          return;
-        }
-      } else {
-        // Suche nach E-Mail
-        if (currentUser.email.toLowerCase() == input.toLowerCase()) {
-          SnackbarUtils.showError(context, l10n.cannotSendRequestToSelf);
-          return;
-        }
-        
-        receiverUser = await _userService.getUserByEmail(input);
-        if (!mounted) return;
-        if (receiverUser == null) {
-          SnackbarUtils.showError(context, l10n.userNotFoundByEmail);
-          return;
-        }
-      }
-
-      // Prüfe, ob User versucht, sich selbst hinzuzufügen
-      if (currentUser.id == receiverUser.id) {
-        SnackbarUtils.showError(context, l10n.cannotSendRequestToSelf);
+      if (!isFriendCode) {
+        SnackbarUtils.showError(context, l10n.errorOccurred);
         return;
       }
 
-      await _friendService.createFriendRequest(currentUser.id!, receiverUser.id!);
+      await _friendService.createFriendRequestByCode(input);
       if (!mounted) return;
       SnackbarUtils.showSuccess(context, AppLocalizations.of(context)!.requestSent);
       _loadData();
-      _emailController.clear();
+      _friendCodeController.clear();
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      // Prüfe auf spezifische Exception-Messages aus friend_service
       final errorString = e.toString();
-      if (errorString.contains(AppConstants.errorFriendAlreadyExists)) {
-        SnackbarUtils.showError(context, l10n.friendRequestAlreadyExists);
-      } else if (errorString.contains(AppConstants.errorFriendRequestExists)) {
+      if (errorString.contains('Friend request already exists')) {
         SnackbarUtils.showError(context, l10n.friendRequestAlreadyExists);
       } else {
         SnackbarUtils.showError(context, l10n.errorOccurred);

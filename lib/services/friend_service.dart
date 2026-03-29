@@ -92,6 +92,34 @@ class FriendService {
     }
   }
 
+  /// Create a friend request using friend code via RPC function.
+  Future<String?> createFriendRequestByCode(String friendCode) async {
+    try {
+      final response = await _db.rpc(
+        'add_friend_by_code',
+        params: {'p_friend_code': friendCode},
+      );
+
+      final responseList = response as List;
+      if (responseList.isEmpty) {
+        throw Exception(AppConstants.errorGeneric);
+      }
+      
+      final result = responseList.first as Map<String, dynamic>;
+      final success = result['success'] as bool?;
+      
+      if (success != true) {
+        final message = result['message'] as String?;
+        throw Exception(message ?? AppConstants.errorGeneric);
+      }
+
+      return result['receiver_user_id'] as String?;
+    } catch (e) {
+      debugPrint('Error creating friend request by code: $e');
+      throw Exception(AppConstants.errorGeneric);
+    }
+  }
+
   /// Akzeptiert eine Freundschaftsanfrage
   Future<void> acceptFriendRequest(String requestId) async {
     try {

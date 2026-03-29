@@ -77,11 +77,12 @@ class AddFriendTab extends StatelessWidget {
         TextField(
           controller: emailController,
           decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)!.friendCodeOrEmail,
+            hintText: 'AB12-CD34',
             border: const OutlineInputBorder(),
           ),
-          keyboardType: TextInputType.emailAddress,
+          keyboardType: TextInputType.text,
           enabled: !isDemoUser,
+          textCapitalization: TextCapitalization.characters,
         ),
         const SizedBox(height: 16),
         ElevatedButton(
