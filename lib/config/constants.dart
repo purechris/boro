@@ -1,6 +1,7 @@
 /// App-wide constants for table names, RPC names, and common keys.
 class AppConstants {
   // Table Names
+  static const String tableAppSettings = 'app_settings';
   static const String tableLendables = 'lendables';
   static const String tableProfiles = 'profiles';
   static const String tableCategories = 'categories';
@@ -17,6 +18,11 @@ class AppConstants {
   static const String rpcGetLendablesForPublicProfile = 'get_lendables_for_public_profile';
   static const String rpcGetLendablesForGroup = 'get_lendables_for_group';
   static const String rpcSearchLendables = 'search_lendables';
+
+  // App Settings Keys
+  static const String keyNewsBannerDe = 'news_banner_de';
+  static const String keyNewsBannerEn = 'news_banner_en';
+  static const String keyMaintenanceMode = 'maintenance_mode';
 
   // Common Keys
   static const String keyId = 'id';
