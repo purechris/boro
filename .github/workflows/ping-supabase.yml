@@ -1,12 +1,12 @@
 name: Supabase Keep-Alive Ping
 
 on:
-  # Definiere den Zeitplan (Cron-Syntax)
-  # Beispiel: Führt den Job jeden Montag und Donnerstag um 09:00 Uhr UTC aus.
+  # Define the schedule (cron syntax)
+  # Example: Runs the job every Monday and Thursday at 09:00 UTC.
   schedule:
     - cron: '0 9 * * 1,4'
-  
-  # Erlaube manuelles Auslösen über die GitHub-Oberfläche
+
+  # Allow manual triggering via the GitHub UI
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Wähle eine aktuelle Node.js-Version
+          node-version: '22'
 
       - name: Install Supabase Client
         run: npm install @supabase/supabase-js
@@ -30,7 +30,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          # Führe ein kleines Node.js-Skript aus, das die Datenbank abfragt.
+          # Run a small Node.js script that queries the database.
           node -e "
             const { createClient } = require('@supabase/supabase-js');
             const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
