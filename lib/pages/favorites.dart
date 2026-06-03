@@ -93,36 +93,44 @@ class _FavoritesPageState extends State<FavoritesPage> {
         child: RefreshIndicator(
           onRefresh: _loadFavorites,
           child: FutureBuilder<List<Map<LendableModel, UserModel>>>(
-          future: _favoriteLendables,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return SizedBox(
-                height: MediaQuery.of(context).size.height - 
-                       kToolbarHeight - 
-                       MediaQuery.of(context).padding.top,
-                child: _buildEmptyState(),
+            future: _favoriteLendables,
+            builder: (context, snapshot) {
+              return CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: _buildSlivers(snapshot),
               );
-            }
-
-            return ListView(
-              children: [
-                const SizedBox(height: 15),
-                LendableList(
-                  lendablesFuture: _favoriteLendables,
-                  emptyState: _buildEmptyState(),
-                  onReturnFromDetail: _onReturnFromDetail,
-                ),
-              ],
-            );
-          },
+            },
+          ),
         ),
       ),
-    ),
     );
+  }
+
+  List<Widget> _buildSlivers(AsyncSnapshot<List<Map<LendableModel, UserModel>>> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return [
+        const SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ];
+    }
+    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return [
+        SliverFillRemaining(
+          child: _buildEmptyState(),
+        ),
+      ];
+    }
+    return [
+      const SliverToBoxAdapter(child: SizedBox(height: 15)),
+      SliverToBoxAdapter(
+        child: LendableList(
+          lendables: snapshot.data!,
+          emptyState: _buildEmptyState(),
+          onReturnFromDetail: _onReturnFromDetail,
+        ),
+      ),
+    ];
   }
 
   /// Build the app bar for the favorites page.

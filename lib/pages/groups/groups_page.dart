@@ -65,21 +65,28 @@ class _GroupsPageState extends State<GroupsPage> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: _loadData,
-                child: _groups.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _groups.length,
-                        itemBuilder: (context, index) {
-                          final group = _groups[index];
-                          return _buildGroupCard(group);
-                        },
-                      ),
-              ),
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (_isLoading)
+                const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_groups.isEmpty)
+                SliverFillRemaining(child: _buildEmptyState())
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
+                    itemCount: _groups.length,
+                    itemBuilder: (context, index) => _buildGroupCard(_groups[index]),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'groups_page_fab',
@@ -91,17 +98,19 @@ class _GroupsPageState extends State<GroupsPage> {
 
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context)!;
-    return ListView(
-      children: [
-        SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-        const Icon(Icons.group_outlined, size: 64, color: Colors.grey),
-        const SizedBox(height: 16),
-        Text(
-          l10n.noGroupsYet,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.grey),
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.group_outlined, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          Text(
+            l10n.noGroupsYet,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 

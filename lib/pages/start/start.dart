@@ -173,40 +173,35 @@ class _StartPageState extends State<StartPage> {
           onTap: () => FocusScope.of(context).unfocus(),
           child: RefreshIndicator(
             onRefresh: () => _loadData(resetFilters: true),
-            child: _isLoading
-                ? Column(
-                    children: [
-                      _buildTopSection(),
-                      const Expanded(
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                    ],
+            child: CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(child: _buildTopSection()),
+                if (_isLoading)
+                  const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
                   )
-                : _allLendables.isEmpty
-                    ? Column(
-                        children: [
-                          _buildTopSection(),
-                          const Expanded(
-                            child: NoItemsEmptyState(),
-                          ),
-                        ],
-                      )
-                    : ListView(
-                        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                        children: [
-                          _buildTopSection(),
-                          const SizedBox(height: 20),
-                          if (_filteredLendables.isEmpty)
-                            const NoResultsEmptyState()
-                          else
-                            LendableList(
-                              lendables: _filteredLendables,
-                              title: AppLocalizations.of(context)!.searchResults,
-                            ),
-                        ],
+                else if (_allLendables.isEmpty)
+                  const SliverFillRemaining(
+                    child: NoItemsEmptyState(),
+                  )
+                else ...[
+                  const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                  if (_filteredLendables.isEmpty)
+                    const SliverFillRemaining(
+                      child: NoResultsEmptyState(),
+                    )
+                  else
+                    SliverToBoxAdapter(
+                      child: LendableList(
+                        lendables: _filteredLendables,
+                        title: AppLocalizations.of(context)!.searchResults,
                       ),
+                    ),
+                ],
+              ],
+            ),
           ),
         ),
       ),

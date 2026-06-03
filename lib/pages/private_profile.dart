@@ -208,38 +208,39 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
       child: FutureBuilder<List<Map<LendableModel, UserModel>>>(
         future: _lendablesWithUsers,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Column(
-              children: [
-                _buildProfileHeader(),
-                Expanded(
-                  child: _buildEmptyState(),
-                ),
-              ],
-            );
-          }
-
-          return ListView(
-            children: [
-              _buildProfileHeader(),
-              SizedBox(height: _spacing),
-              LendableList(
-                lendablesFuture: _lendablesWithUsers,
-                title: AppLocalizations.of(context)!.myAds,
-                showMenu: true,
-                onDelete: _onDelete,
-                onBorrowChanged: _loadData,
-                hideUserName: true,
-              ),
-            ],
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: _buildSlivers(snapshot),
           );
         },
       ),
     );
+  }
+
+  List<Widget> _buildSlivers(AsyncSnapshot<List<Map<LendableModel, UserModel>>> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return [const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))];
+    }
+    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return [
+        SliverToBoxAdapter(child: _buildProfileHeader()),
+        SliverFillRemaining(child: _buildEmptyState()),
+      ];
+    }
+    return [
+      SliverToBoxAdapter(child: _buildProfileHeader()),
+      SliverToBoxAdapter(child: SizedBox(height: _spacing)),
+      SliverToBoxAdapter(
+        child: LendableList(
+          lendables: snapshot.data!,
+          title: AppLocalizations.of(context)!.myAds,
+          showMenu: true,
+          onDelete: _onDelete,
+          onBorrowChanged: _loadData,
+          hideUserName: true,
+        ),
+      ),
+    ];
   }
 
   AppBar _buildAppBar() {
