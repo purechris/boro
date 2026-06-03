@@ -9,8 +9,8 @@ import 'package:verleihapp/services/lendable_service.dart';
 import 'package:verleihapp/services/user_service.dart';
 import 'package:verleihapp/utils/string_utils.dart';
 import 'package:verleihapp/utils/location_utils.dart';
-import 'package:verleihapp/utils/snackbar_utils.dart';
 import 'package:verleihapp/components/lendable_list.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
 import 'package:verleihapp/pages/start/components/start_search_bar.dart';
 import 'package:verleihapp/pages/start/components/start_filter_section.dart';
@@ -38,6 +38,7 @@ class _StartPageState extends State<StartPage> {
   List<Map<LendableModel, UserModel>> _allLendables = [];
   List<Map<LendableModel, UserModel>> _filteredLendables = [];
   bool _isLoading = true;
+  bool _hasError = false;
   UserModel? _currentUser;
   FilterState _currentFilters = FilterState.initial();
 
@@ -55,6 +56,10 @@ class _StartPageState extends State<StartPage> {
   }
 
   Future<void> _loadData({bool resetFilters = false}) async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final results = await Future.wait([
         _lendableService.getLendablesForStartPage(),
@@ -85,9 +90,8 @@ class _StartPageState extends State<StartPage> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _hasError = true;
         });
-        // Show error to user
-        SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorLoadingData);
         debugPrint('Error loading start page data: $e');
       }
     }
@@ -181,6 +185,10 @@ class _StartPageState extends State<StartPage> {
                 if (_isLoading)
                   const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_hasError)
+                  SliverFillRemaining(
+                    child: ErrorStateWidget(onRetry: _loadData),
                   )
                 else if (_allLendables.isEmpty)
                   const SliverFillRemaining(

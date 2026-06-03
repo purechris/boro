@@ -3,6 +3,7 @@ import 'package:verleihapp/models/lendable_model.dart';
 import 'package:verleihapp/models/user_model.dart';
 import 'package:verleihapp/services/favorite_service.dart';
 import 'package:verleihapp/components/lendable_list.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 import 'package:verleihapp/pages/home.dart';
 import 'package:verleihapp/utils/navigation_utils.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
@@ -111,6 +112,13 @@ class _FavoritesPageState extends State<FavoritesPage> {
       return [
         const SliverFillRemaining(
           child: Center(child: CircularProgressIndicator()),
+        ),
+      ];
+    }
+    if (snapshot.hasError) {
+      return [
+        SliverFillRemaining(
+          child: ErrorStateWidget(onRetry: _loadFavorites),
         ),
       ];
     }

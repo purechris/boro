@@ -8,6 +8,7 @@ import 'package:verleihapp/services/lendable_service.dart';
 import 'package:verleihapp/services/user_service.dart';
 import 'package:verleihapp/components/lendable_list.dart';
 import 'package:verleihapp/components/profile_card.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 import 'package:verleihapp/utils/navigation_utils.dart';
 import 'package:verleihapp/utils/snackbar_utils.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
@@ -220,6 +221,12 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
   List<Widget> _buildSlivers(AsyncSnapshot<List<Map<LendableModel, UserModel>>> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return [const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))];
+    }
+    if (snapshot.hasError) {
+      return [
+        SliverToBoxAdapter(child: _buildProfileHeader()),
+        SliverFillRemaining(child: ErrorStateWidget(onRetry: _loadData)),
+      ];
     }
     if (!snapshot.hasData || snapshot.data!.isEmpty) {
       return [

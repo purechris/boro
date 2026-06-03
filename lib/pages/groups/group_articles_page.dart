@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:verleihapp/components/lendable_list.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 import 'package:verleihapp/models/group_model.dart';
 import 'package:verleihapp/models/lendable_model.dart';
 import 'package:verleihapp/models/user_model.dart';
@@ -24,6 +25,7 @@ class _GroupArticlesPageState extends State<GroupArticlesPage> {
   final LendableService _lendableService = LendableService();
   List<Map<LendableModel, UserModel>> _items = [];
   bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -32,11 +34,13 @@ class _GroupArticlesPageState extends State<GroupArticlesPage> {
   }
 
   Future<void> _loadItems() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       if (widget.group.id == null) return;
-      
       final results = await _lendableService.fetchGroupLendables(widget.group.id!);
-      
       if (mounted) {
         setState(() {
           _items = results;
@@ -45,7 +49,10 @@ class _GroupArticlesPageState extends State<GroupArticlesPage> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
       }
     }
   }
@@ -64,15 +71,17 @@ class _GroupArticlesPageState extends State<GroupArticlesPage> {
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
                 onRefresh: _loadItems,
-                child: ListView(
-                  children: [
-                    const SizedBox(height: 10),
-                    LendableList(
-                      lendablesFuture: Future.value(_items),
-                      emptyState: _buildEmptyState(l10n),
-                    ),
-                  ],
-                ),
+                child: _hasError
+                    ? ErrorStateWidget(onRetry: _loadItems)
+                    : ListView(
+                        children: [
+                          const SizedBox(height: 10),
+                          LendableList(
+                            lendablesFuture: Future.value(_items),
+                            emptyState: _buildEmptyState(l10n),
+                          ),
+                        ],
+                      ),
               ),
       ),
     );

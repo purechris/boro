@@ -6,6 +6,7 @@ import 'package:verleihapp/services/user_service.dart';
 import 'package:verleihapp/services/friend_service.dart';
 import 'package:verleihapp/components/lendable_list.dart';
 import 'package:verleihapp/components/profile_card.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 import 'package:verleihapp/utils/snackbar_utils.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
 
@@ -80,7 +81,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
       return [const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))];
     }
     if (userSnapshot.hasError) {
-      return [SliverFillRemaining(child: _buildErrorState())];
+      return [SliverFillRemaining(child: ErrorStateWidget(onRetry: _loadData))];
     }
     if (!userSnapshot.hasData || userSnapshot.data == null) {
       return [SliverFillRemaining(child: Center(child: Text(AppLocalizations.of(context)!.userNotFound)))];
@@ -116,6 +117,9 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
         if (lendablesSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (lendablesSnapshot.hasError) {
+          return ErrorStateWidget(onRetry: _loadData);
+        }
         if (!lendablesSnapshot.hasData || lendablesSnapshot.data!.isEmpty) {
           return _buildEmptyState();
         }
@@ -143,28 +147,6 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)!.userHasNoAds,
-            style: Theme.of(context).textTheme.bodySmall,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context)!.profileLoadError,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.userCouldNotBeLoaded,
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.center,
           ),
