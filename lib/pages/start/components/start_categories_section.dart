@@ -23,22 +23,9 @@ class StartCategoriesSection extends StatelessWidget {
     required this.onCategorySelected,
   });
 
-  List<CategoryModel> _getSortedCategories() {
-    final selectedCategory = currentFilters.category;
-    if (selectedCategory == AppConstants.filterAll) return categories;
-    
-    final List<CategoryModel> sorted = List.from(categories);
-    final selectedIndex = sorted.indexWhere((c) => c.name == selectedCategory);
-    if (selectedIndex != -1) {
-      final category = sorted.removeAt(selectedIndex);
-      sorted.insert(0, category);
-    }
-    return sorted;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final sortedCategories = _getSortedCategories();
+    final sortedCategories = categories;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,15 +78,6 @@ class StartCategoriesSection extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         onCategorySelected(isSelected ? AppConstants.filterAll : category.name);
-        
-        // Scroll left when a filter is selected
-        if (!isSelected) {
-          scrollController.animateTo(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
       },
       child: Container(
         width: 100,

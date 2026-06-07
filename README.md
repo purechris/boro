@@ -1,4 +1,4 @@
-# BORO - A Community Lending Platform
+# BORO - A Non-Profit Community Lending Platform
 
 BORO is a modern Flutter application that enables users to lend and find items within their community. Connect with neighbors, friends and others and promote sustainable sharing.
 

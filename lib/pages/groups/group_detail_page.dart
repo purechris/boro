@@ -10,6 +10,7 @@ import 'package:verleihapp/services/group_service.dart';
 import 'package:verleihapp/services/user_service.dart';
 import 'package:verleihapp/utils/icon_utils.dart';
 import 'package:verleihapp/utils/snackbar_utils.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 
 class GroupDetailPage extends StatefulWidget {
   final GroupModel group;
@@ -29,6 +30,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   late GroupModel _group;
   List<GroupMemberModel> _members = [];
   bool _isLoading = true;
+  bool _hasMembersError = false;
 
   @override
   void initState() {
@@ -39,20 +41,17 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
 
   Future<void> _loadData() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
-
+    setState(() {
+      _isLoading = true;
+      _hasMembersError = false;
+    });
     try {
       final userId = _userService.getCurrentUserId();
-      
-      // 1. Fetch updated group details
       final updatedGroup = await _groupService.getGroup(_group.id!, userId);
       if (updatedGroup != null) {
         _group = updatedGroup;
       }
-
-      // 2. Fetch members (including roles)
       final members = await _groupService.getGroupMembers(_group.id!);
-      
       if (!mounted) return;
       setState(() {
         _members = members;
@@ -60,8 +59,10 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _hasMembersError = true;
+      });
     }
   }
 
@@ -266,6 +267,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
 
   Widget _buildMembersList(AppLocalizations l10n) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
+    if (_hasMembersError) return ErrorStateWidget(onRetry: _loadData);
     if (_members.isEmpty) return Text(l10n.noMembers, style: const TextStyle(color: Colors.grey));
 
     return Column(

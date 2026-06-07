@@ -25,80 +25,52 @@ class FriendListTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final refreshIndicator = onRefresh != null 
-      ? (Widget child) => RefreshIndicator(onRefresh: onRefresh!, child: child)
-      : (Widget child) => child;
-
-    return FutureBuilder<FriendListData>(
+    final scrollView = FutureBuilder<FriendListData>(
       future: dataFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return refreshIndicator(
-            SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.7,
-                child: Center(child: Text(AppLocalizations.of(context)!.errorLoadingData)),
-              ),
-            ),
-          );
-        } else if (snapshot.hasData) {
-          final friends = snapshot.data!.friends;
-          if (friends.isEmpty) {
-            return refreshIndicator(
-              SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.7,
-                  child: _buildEmptyState(context),
-                ),
-              ),
-            );
-          }
-          return refreshIndicator(
-            SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildFriendList(context, friends),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-        return refreshIndicator(
-          SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.7,
-              child: Center(child: Text(AppLocalizations.of(context)!.noDataFound)),
-            ),
-          ),
+        return CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: _buildSlivers(context, snapshot),
         );
       },
     );
+
+    if (onRefresh != null) {
+      return RefreshIndicator(onRefresh: onRefresh!, child: scrollView);
+    }
+    return scrollView;
   }
 
-  Widget _buildFriendList(BuildContext context, List<UserModel> friends) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: friends.length,
-      itemBuilder: (context, index) {
-        final friend = friends[index];
-        return UserCard(
-          user: friend,
-          onTap: () => onNavigateToProfile(friend),
-          rightWidget: _buildFriendMenu(context, friend),
-        );
-      },
-    );
+  List<Widget> _buildSlivers(BuildContext context, AsyncSnapshot<FriendListData> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return [const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))];
+    }
+    if (snapshot.hasError) {
+      return [SliverFillRemaining(child: Center(child: Text(AppLocalizations.of(context)!.errorLoadingData)))];
+    }
+    if (!snapshot.hasData) {
+      return [SliverFillRemaining(child: Center(child: Text(AppLocalizations.of(context)!.noDataFound)))];
+    }
+    final friends = snapshot.data!.friends;
+    if (friends.isEmpty) {
+      return [SliverFillRemaining(child: _buildEmptyState(context))];
+    }
+    return [
+      SliverPadding(
+        padding: const EdgeInsets.all(16.0),
+        sliver: SliverList.builder(
+          itemCount: friends.length,
+          itemBuilder: (context, index) {
+            final friend = friends[index];
+            return UserCard(
+              user: friend,
+              onTap: () => onNavigateToProfile(friend),
+              rightWidget: _buildFriendMenu(context, friend),
+            );
+          },
+        ),
+      ),
+    ];
   }
 
   Widget _buildFriendMenu(BuildContext context, UserModel friend) {

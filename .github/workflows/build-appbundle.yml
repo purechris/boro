@@ -1,10 +1,6 @@
 name: Build App Bundle
 
 on:
-  push:
-    branches:
-      - main
-      - develop
   workflow_dispatch:
 
 jobs:

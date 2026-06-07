@@ -6,6 +6,7 @@ import 'package:verleihapp/services/user_service.dart';
 import 'package:verleihapp/services/friend_service.dart';
 import 'package:verleihapp/components/lendable_list.dart';
 import 'package:verleihapp/components/profile_card.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 import 'package:verleihapp/utils/snackbar_utils.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
 
@@ -30,7 +31,8 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
   // State
   late Future<UserModel?> _userFuture;
   late Future<List<Map<LendableModel, UserModel>>> _lendablesWithUsers;
-  
+  late Future<UserModel?> _currentUserFuture;
+
   // Key for the FutureBuilder to reload it after sending a request
   Key _friendStatusKey = UniqueKey();
 
@@ -40,9 +42,13 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
     _loadData();
   }
 
-  void _loadData() {
-    _userFuture = _userService.getUser(widget.userId);
-    _lendablesWithUsers = _lendableService.fetchLendablesForPublicProfile(widget.userId);
+  Future<void> _loadData() async {
+    setState(() {
+      _userFuture = _userService.getUser(widget.userId);
+      _lendablesWithUsers = _lendableService.fetchLendablesForPublicProfile(widget.userId);
+      _currentUserFuture = _userService.getCurrentUser();
+      _friendStatusKey = UniqueKey();
+    });
   }
   
   @override
@@ -55,17 +61,83 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
     );
   }
 
+  Widget _buildBody() {
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: FutureBuilder<UserModel?>(
+        future: _userFuture,
+        builder: (context, userSnapshot) {
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: _buildSlivers(userSnapshot),
+          );
+        },
+      ),
+    );
+  }
+
+  List<Widget> _buildSlivers(AsyncSnapshot<UserModel?> userSnapshot) {
+    if (userSnapshot.connectionState == ConnectionState.waiting) {
+      return [const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))];
+    }
+    if (userSnapshot.hasError) {
+      return [SliverFillRemaining(child: ErrorStateWidget(onRetry: _loadData))];
+    }
+    if (!userSnapshot.hasData || userSnapshot.data == null) {
+      return [SliverFillRemaining(child: Center(child: Text(AppLocalizations.of(context)!.userNotFound)))];
+    }
+    final user = userSnapshot.data!;
+    return [
+      SliverToBoxAdapter(child: _buildProfileHeaderSection(user)),
+      const SliverToBoxAdapter(child: SizedBox(height: _spacing)),
+      SliverToBoxAdapter(child: _buildLendablesSection()),
+    ];
+  }
+
+  Widget _buildProfileHeaderSection(UserModel user) {
+    return FutureBuilder<UserModel?>(
+      future: _currentUserFuture,
+      builder: (context, currentUserSnapshot) {
+        final currentUserId = currentUserSnapshot.data?.id;
+        return Column(
+          children: [
+            ProfileCard(user: user, currentUserId: currentUserId),
+            if (currentUserId != null && currentUserId != user.id)
+              _buildFriendButton(currentUserId, user.id!),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLendablesSection() {
+    return FutureBuilder<List<Map<LendableModel, UserModel>>>(
+      future: _lendablesWithUsers,
+      builder: (context, lendablesSnapshot) {
+        if (lendablesSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (lendablesSnapshot.hasError) {
+          return ErrorStateWidget(onRetry: _loadData);
+        }
+        if (!lendablesSnapshot.hasData || lendablesSnapshot.data!.isEmpty) {
+          return _buildEmptyState();
+        }
+        return LendableList(
+          lendables: lendablesSnapshot.data!,
+          title: AppLocalizations.of(context)!.currentAds,
+        );
+      },
+    );
+  }
+
   Widget _buildEmptyState() {
-    return SizedBox(
-      height: 300,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.inventory_2_outlined,
-            size: 48,
-            color: Colors.grey,
-          ),
+          const Icon(Icons.inventory_2_outlined, size: 48, color: Colors.grey),
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(context)!.noAdsYet,
@@ -80,83 +152,6 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBody() {
-    return FutureBuilder<UserModel?>(
-      future: _userFuture,
-      builder: (context, userSnapshot) {
-        if (userSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (userSnapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(
-                  AppLocalizations.of(context)!.profileLoadError,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppLocalizations.of(context)!.userCouldNotBeLoaded,
-                  style: Theme.of(context).textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        }
-
-        if (!userSnapshot.hasData || userSnapshot.data == null) {
-          return Center(
-            child: Text(AppLocalizations.of(context)!.userNotFound),
-          );
-        }
-
-        final user = userSnapshot.data!;
-        return FutureBuilder<List<Map<LendableModel, UserModel>>>(
-          future: _lendablesWithUsers,
-          builder: (context, lendablesSnapshot) {
-            return ListView(
-              children: [
-                FutureBuilder<UserModel?>(
-                  future: _userService.getCurrentUser(),
-                  builder: (context, currentUserSnapshot) {
-                    final currentUserId = currentUserSnapshot.data?.id;
-                    return Column(
-                      children: [
-                        ProfileCard(
-                          user: user,
-                          currentUserId: currentUserId,
-                        ),
-                        // Freundschafts-Button (nur wenn nicht eigenes Profil)
-                        if (currentUserId != null && currentUserId != user.id)
-                          _buildFriendButton(currentUserId, user.id!),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: _spacing),
-                if (lendablesSnapshot.connectionState == ConnectionState.waiting)
-                  const Center(child: CircularProgressIndicator())
-                else if (!lendablesSnapshot.hasData || lendablesSnapshot.data!.isEmpty)
-                  _buildEmptyState()
-                else
-                  LendableList(
-                    lendablesFuture: _lendablesWithUsers,
-                    title: AppLocalizations.of(context)!.currentAds,
-                  ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 

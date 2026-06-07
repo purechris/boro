@@ -7,7 +7,7 @@ import 'package:verleihapp/pages/groups/join_group_page.dart';
 import 'package:verleihapp/services/group_service.dart';
 import 'package:verleihapp/services/user_service.dart';
 import 'package:verleihapp/utils/icon_utils.dart';
-import 'package:verleihapp/utils/snackbar_utils.dart';
+import 'package:verleihapp/components/error_state_widget.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
 
 class GroupsPage extends StatefulWidget {
@@ -22,6 +22,7 @@ class _GroupsPageState extends State<GroupsPage> {
   final GroupService _groupService = GroupService();
   UserModel? _currentUser;
   bool _isLoading = true;
+  bool _hasError = false;
   List<GroupModel> _groups = [];
 
   @override
@@ -32,14 +33,14 @@ class _GroupsPageState extends State<GroupsPage> {
 
   Future<void> _loadData() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
-    
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final user = await _userService.getCurrentUser();
       if (!mounted) return;
-      
       _currentUser = user;
-      
       if (_currentUser?.id != null) {
         final groups = await _groupService.getUserGroups(_currentUser!.id!);
         if (!mounted) return;
@@ -47,10 +48,9 @@ class _GroupsPageState extends State<GroupsPage> {
       }
     } catch (e) {
       if (mounted) {
-        SnackbarUtils.showError(context, e.toString());
+        setState(() => _hasError = true);
       }
     }
-    
     if (mounted) {
       setState(() => _isLoading = false);
     }
@@ -65,21 +65,30 @@ class _GroupsPageState extends State<GroupsPage> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: _loadData,
-                child: _groups.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _groups.length,
-                        itemBuilder: (context, index) {
-                          final group = _groups[index];
-                          return _buildGroupCard(group);
-                        },
-                      ),
-              ),
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (_isLoading)
+                const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_hasError)
+                SliverFillRemaining(child: ErrorStateWidget(onRetry: _loadData))
+              else if (_groups.isEmpty)
+                SliverFillRemaining(child: _buildEmptyState())
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList.builder(
+                    itemCount: _groups.length,
+                    itemBuilder: (context, index) => _buildGroupCard(_groups[index]),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'groups_page_fab',
@@ -91,17 +100,19 @@ class _GroupsPageState extends State<GroupsPage> {
 
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context)!;
-    return ListView(
-      children: [
-        SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-        const Icon(Icons.group_outlined, size: 64, color: Colors.grey),
-        const SizedBox(height: 16),
-        Text(
-          l10n.noGroupsYet,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.grey),
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.group_outlined, size: 64, color: Colors.grey),
+          const SizedBox(height: 16),
+          Text(
+            l10n.noGroupsYet,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 

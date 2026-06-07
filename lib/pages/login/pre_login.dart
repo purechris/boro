@@ -6,6 +6,8 @@ import 'package:verleihapp/pages/home.dart';
 import 'package:verleihapp/services/auth_service.dart';
 import 'package:verleihapp/utils/navigation_utils.dart';
 import 'package:verleihapp/utils/snackbar_utils.dart';
+import 'package:verleihapp/components/news_banner_widget.dart';
+import 'package:verleihapp/services/app_settings_service.dart';
 
 class PreLogin extends StatefulWidget {
   const PreLogin({super.key});
@@ -17,7 +19,22 @@ class PreLogin extends StatefulWidget {
 class _PreLoginState extends State<PreLogin> {
   final PageController _pageController = PageController();
   final AuthService _authService = AuthService();
+  final AppSettingsService _settingsService = AppSettingsService();
   int _currentPage = 0;
+  bool _isMaintenanceModeActive = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMaintenanceMode();
+  }
+
+  Future<void> _loadMaintenanceMode() async {
+    final bool isActive = await _settingsService.fetchIsMaintenanceModeActive();
+    if (mounted) {
+      setState(() => _isMaintenanceModeActive = isActive);
+    }
+  }
 
   // Slideshow-Daten - jetzt mit Lokalisierung
   List<Map<String, dynamic>> _getSlideshowData(BuildContext context) {
@@ -56,7 +73,9 @@ class _PreLoginState extends State<PreLogin> {
               children: [
                 const SizedBox(height: 30),
                 _buildCenteredImage(),
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
+                const NewsBannerWidget(),
+                const SizedBox(height: 24),
                 _buildSlideshow(slideshowData),
                 const SizedBox(height: 0),
                 _buildPageIndicators(slideshowData.length),
@@ -156,14 +175,14 @@ class _PreLoginState extends State<PreLogin> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Signup(),
-            ),
-          );
-        },
+        onPressed: _isMaintenanceModeActive
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Signup()),
+                );
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Colors.white,
@@ -189,14 +208,14 @@ class _PreLoginState extends State<PreLogin> {
       width: double.infinity,
       height: 50,
       child: OutlinedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Login(),
-            ),
-          );
-        },
+        onPressed: _isMaintenanceModeActive
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Login()),
+                );
+              },
         style: OutlinedButton.styleFrom(
           foregroundColor: Theme.of(context).colorScheme.primary,
           side: BorderSide(
@@ -223,16 +242,18 @@ class _PreLoginState extends State<PreLogin> {
       width: double.infinity,
       height: 50,
       child: OutlinedButton(
-        onPressed: () async {
-          try {
-            await _authService.signInAsDemo();
-            if (!mounted) return;
-            await NavigationUtils.navigateTo(context, const HomePage(), clearStack: true);
-          } catch (e) {
-            if (!mounted) return;
-            SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
-          }
-        },
+        onPressed: _isMaintenanceModeActive
+            ? null
+            : () async {
+                try {
+                  await _authService.signInAsDemo();
+                  if (!mounted) return;
+                  await NavigationUtils.navigateTo(context, const HomePage(), clearStack: true);
+                } catch (e) {
+                  if (!mounted) return;
+                  SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
+                }
+              },
         style: OutlinedButton.styleFrom(
           foregroundColor: Theme.of(context).colorScheme.primary,
           side: BorderSide(

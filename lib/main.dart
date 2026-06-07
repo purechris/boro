@@ -8,6 +8,7 @@ import 'package:verleihapp/pages/login/pre_login.dart';
 import 'package:verleihapp/pages/login/auth_callback.dart';
 import 'package:verleihapp/config/supabase_config.dart';
 import 'package:verleihapp/components/connectivity_wrapper.dart';
+import 'package:verleihapp/services/app_settings_service.dart';
 
 // Supabase Client
 final supabase = Supabase.instance.client;
@@ -45,6 +46,14 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _determineLocale();
     _setupAuthListener();
+    _signOutIfMaintenanceModeActive();
+  }
+
+  Future<void> _signOutIfMaintenanceModeActive() async {
+    final bool isActive = await AppSettingsService().fetchIsMaintenanceModeActive();
+    if (isActive && supabase.auth.currentUser != null) {
+      await supabase.auth.signOut();
+    }
   }
 
   void _determineLocale() {
