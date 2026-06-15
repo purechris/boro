@@ -7,11 +7,25 @@ import 'package:verleihapp/main.dart';
 
 import 'package:verleihapp/models/file_upload_dto.dart';
 
+class _CompressParams {
+  final Uint8List bytes;
+  final int width;
+  const _CompressParams({required this.bytes, required this.width});
+}
+
+Uint8List _compressImageIsolate(_CompressParams params) {
+  final originalImage = img.decodeImage(params.bytes);
+  if (originalImage == null) {
+    throw Exception('Error decoding image');
+  }
+  final compressedImage = img.copyResize(originalImage, width: params.width);
+  return Uint8List.fromList(img.encodeJpg(compressedImage, quality: 85));
+}
+
 /// Service for managing file uploads and storage in the lending app.
 class FileService {
   static const String _noUserLoggedInError = 'No user logged in';
   static const String _missingIdsError = 'User ID and Lendable ID are required';
-  static const String _imageDecodeError = 'Error decoding image';
   static const String _compressError = 'Error compressing image';
   static const String _uploadError = 'Error uploading image';
   static const String _deleteError = 'Error deleting images';
@@ -36,17 +50,11 @@ class FileService {
     }
   }
 
-  /// Compress an image to specified width.
+  /// Compress an image to specified width using a background isolate.
   Future<Uint8List> _compressImage(XFile image, {required int width}) async {
     try {
       final bytes = await image.readAsBytes();
-      final originalImage = img.decodeImage(bytes);
-      if (originalImage == null) {
-        throw Exception(_imageDecodeError);
-      }
-
-      final compressedImage = img.copyResize(originalImage, width: width);
-      return Uint8List.fromList(img.encodeJpg(compressedImage, quality: 85));
+      return await compute(_compressImageIsolate, _CompressParams(bytes: bytes, width: width));
     } catch (e) {
       throw Exception('$_compressError: $e');
     }
