@@ -941,6 +941,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get invalidCredentials => 'Ungültige E-Mail-Adresse oder Passwort';
 
   @override
+  String get imageSourceCamera => 'Foto aufnehmen';
+
+  @override
+  String get imageSourceGallery => 'Aus Galerie wählen';
+
+  @override
   String get invalidImageType =>
       'Bewegtbilder (Videos, GIFs) werden nicht unterstützt';
 

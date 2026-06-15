@@ -933,6 +933,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidCredentials => 'Invalid email address or password';
 
   @override
+  String get imageSourceCamera => 'Take a photo';
+
+  @override
+  String get imageSourceGallery => 'Choose from gallery';
+
+  @override
   String get invalidImageType =>
       'Moving images (videos, GIFs) are not supported';
 

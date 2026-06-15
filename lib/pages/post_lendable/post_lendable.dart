@@ -215,12 +215,41 @@ class _PostLendablePageState extends State<PostLendablePage> {
     });
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _showImageSourcePicker() async {
+    final source = await _showSourceBottomSheet();
+    if (source == null) return;
+    await _pickImageFromSource(source);
+  }
+
+  Future<ImageSource?> _showSourceBottomSheet() {
+    final localizations = AppLocalizations.of(context)!;
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(localizations.imageSourceCamera),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(localizations.imageSourceGallery),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromSource(ImageSource source) async {
     try {
       final ImagePicker picker = ImagePicker();
-      final image = await picker.pickImage(source: ImageSource.gallery);
+      final image = await picker.pickImage(source: source);
       if (image != null) {
-        // Prüfung auf Bewegtbilder (Videos, animierte GIFs)
         final String extension = image.path.split('.').last.toLowerCase();
         if (['mp4', 'mov', 'avi', 'gif', 'hevc'].contains(extension)) {
           if (mounted) {
@@ -228,8 +257,6 @@ class _PostLendablePageState extends State<PostLendablePage> {
           }
           return;
         }
-
-        // Prüfung auf Dateigröße (15 MB)
         final bytes = await image.readAsBytes();
         if (bytes.length > 15 * 1024 * 1024) {
           if (mounted) {
@@ -237,7 +264,6 @@ class _PostLendablePageState extends State<PostLendablePage> {
           }
           return;
         }
-
         setState(() {
           _selectedImage = image;
         });
@@ -271,7 +297,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
                     PostImagePicker(
                       selectedImage: _selectedImage,
                       imageUrl: imageUrl,
-                      onPickImage: _pickImage,
+                      onPickImage: _showImageSourcePicker,
                       onClearImage: _clearImage,
                     ),
                     const SizedBox(height: _spacing),

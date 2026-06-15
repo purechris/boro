@@ -344,6 +344,8 @@
   "errorOccurred": "Es ist ein Fehler aufgetreten",
   "emailNotConfirmed": "Bitte bestätige deine E-Mail-Adresse, um dich anzumelden.",
   "invalidCredentials": "Ungültige E-Mail-Adresse oder Passwort",
+  "imageSourceCamera": "Foto aufnehmen",
+  "imageSourceGallery": "Aus Galerie wählen",
   "invalidImageType": "Bewegtbilder (Videos, GIFs) werden nicht unterstützt",
   "fileTooLarge": "Das Bild ist zu groß. Maximale Größe: 15MB",
   "noInternetConnection": "Keine Internetverbindung",

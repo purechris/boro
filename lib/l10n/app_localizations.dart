@@ -1874,6 +1874,18 @@ abstract class AppLocalizations {
   /// **'Ungültige E-Mail-Adresse oder Passwort'**
   String get invalidCredentials;
 
+  /// No description provided for @imageSourceCamera.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto aufnehmen'**
+  String get imageSourceCamera;
+
+  /// No description provided for @imageSourceGallery.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus Galerie wählen'**
+  String get imageSourceGallery;
+
   /// No description provided for @invalidImageType.
   ///
   /// In de, this message translates to:
