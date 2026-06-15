@@ -1167,4 +1167,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinGroupSuccess => 'You have joined the group';
+
+  @override
+  String get friendSuggestions => 'People you may know';
+
+  @override
+  String get showLess => 'Show less';
+
+  @override
+  String showMore(int count) {
+    return 'Show $count more';
+  }
 }

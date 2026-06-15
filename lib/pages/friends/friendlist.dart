@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:verleihapp/config/constants.dart';
 import 'package:verleihapp/models/friend_request_model.dart';
 import 'package:verleihapp/models/user_model.dart';
 import 'package:verleihapp/pages/public_profile.dart';
@@ -56,14 +57,18 @@ class _FriendListPageState extends State<FriendlistPage> with SingleTickerProvid
     final user = await _userService.getCurrentUser();
     if (user?.id != null) {
       final userId = user!.id!;
-      final friends = await _friendService.getFriends(userId);
-      final sentRequests = await _friendService.getSentFriendRequests(userId);
-      final receivedRequests = await _friendService.getReceivedFriendRequests(userId);
+      final results = await Future.wait([
+        _friendService.getFriends(userId),
+        _friendService.getSentFriendRequests(userId),
+        _friendService.getReceivedFriendRequests(userId),
+        _friendService.getFriendSuggestions(userId),
+      ]);
       return FriendListData(
         currentUser: user,
-        friends: friends,
-        sentRequests: sentRequests,
-        receivedRequests: receivedRequests,
+        friends: results[0] as List<UserModel>,
+        sentRequests: results[1] as List<FriendRequestModel>,
+        receivedRequests: results[2] as List<FriendRequestModel>,
+        suggestions: results[3] as List<UserModel>,
       );
     }
     return FriendListData.empty();
@@ -97,6 +102,7 @@ class _FriendListPageState extends State<FriendlistPage> with SingleTickerProvid
               isDemoUser: _userService.isDemoUser(),
               dataFuture: _dataFuture,
               onSendFriendRequest: _sendFriendRequest,
+              onSendFriendRequestToUser: _sendFriendRequestToUser,
               onShareFriendCode: _shareFriendCode,
               onCopyFriendCode: _copyFriendCodeToClipboard,
               onRefresh: _handleRefresh,
@@ -248,6 +254,29 @@ class _FriendListPageState extends State<FriendlistPage> with SingleTickerProvid
       } catch (e) {
         if (!mounted) return;
         SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
+      }
+    }
+  }
+
+  Future<void> _sendFriendRequestToUser(UserModel user) async {
+    try {
+      final l10n = AppLocalizations.of(context)!;
+      final currentUserId = _currentUser?.id;
+      if (currentUserId == null || user.id == null) return;
+      await _friendService.createFriendRequest(currentUserId, user.id!);
+      if (!mounted) return;
+      _loadData();
+      SnackbarUtils.showSuccess(context, l10n.requestSent);
+    } catch (e) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      final errorString = e.toString();
+      if (errorString.contains(AppConstants.errorFriendRequestExists)) {
+        SnackbarUtils.showError(context, l10n.friendRequestAlreadyExists);
+      } else if (errorString.contains(AppConstants.errorFriendAlreadyExists)) {
+        SnackbarUtils.showError(context, l10n.friendRequestAlreadyExists);
+      } else {
+        SnackbarUtils.showError(context, l10n.errorOccurred);
       }
     }
   }

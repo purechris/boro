@@ -7,12 +7,14 @@ class FriendListData {
   final List<UserModel> friends;
   final List<FriendRequestModel> sentRequests;
   final List<FriendRequestModel> receivedRequests;
+  final List<UserModel> suggestions;
 
   const FriendListData({
     this.currentUser,
     this.friends = const [],
     this.sentRequests = const [],
     this.receivedRequests = const [],
+    this.suggestions = const [],
   });
 
   /// Creates an empty [FriendListData].
@@ -25,14 +27,21 @@ class FriendListData {
     List<UserModel>? friends,
     List<FriendRequestModel>? sentRequests,
     List<FriendRequestModel>? receivedRequests,
+    List<UserModel>? suggestions,
   }) {
     return FriendListData(
       currentUser: currentUser ?? this.currentUser,
       friends: friends ?? this.friends,
       sentRequests: sentRequests ?? this.sentRequests,
       receivedRequests: receivedRequests ?? this.receivedRequests,
+      suggestions: suggestions ?? this.suggestions,
     );
   }
 
-  bool get isEmpty => currentUser == null && friends.isEmpty && sentRequests.isEmpty && receivedRequests.isEmpty;
+  bool get isEmpty =>
+      currentUser == null &&
+      friends.isEmpty &&
+      sentRequests.isEmpty &&
+      receivedRequests.isEmpty &&
+      suggestions.isEmpty;
 }

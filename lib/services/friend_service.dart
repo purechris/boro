@@ -299,6 +299,24 @@ class FriendService {
     }
   }
 
+  /// Get friend suggestions (friends of friends) for a user.
+  /// Uses the database function: public.get_friend_suggestions
+  Future<List<UserModel>> getFriendSuggestions(String userId) async {
+    try {
+      final response = await _db.rpc(
+        'get_friend_suggestions',
+        params: {'p_user_id': userId},
+      );
+      final responseList = response as List;
+      return responseList.map((userData) {
+        return UserModel.fromJson(userData as Map<String, dynamic>, userData['id'] as String);
+      }).toList();
+    } catch (e) {
+      debugPrint('Error getting friend suggestions: $e');
+      return [];
+    }
+  }
+
   /// Get network statistics (direct and indirect) for a user.
   /// Uses the database function: public.get_friend_network_counts
   Future<Map<String, int>> getFriendNetworkCounts(String userId) async {

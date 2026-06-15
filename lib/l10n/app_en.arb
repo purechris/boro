@@ -434,6 +434,16 @@
   "groupNameTooLong": "Group name is too long (max. 20 characters)",
   "renewGroupCodeConfirm": "Do you really want to renew the group code? The old code will become invalid immediately and new members will not be able to join with it.",
   "enterGroupCode": "Please enter a group code",
-  "joinGroupSuccess": "You have joined the group"
+  "joinGroupSuccess": "You have joined the group",
+  "friendSuggestions": "People you may know",
+  "showLess": "Show less",
+  "showMore": "Show {count} more",
+  "@showMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
 

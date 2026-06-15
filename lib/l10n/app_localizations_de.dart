@@ -1182,4 +1182,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get joinGroupSuccess => 'Du bist der Gruppe beigetreten';
+
+  @override
+  String get friendSuggestions => 'Personen, die du kennen könntest';
+
+  @override
+  String get showLess => 'Weniger anzeigen';
+
+  @override
+  String showMore(int count) {
+    return '$count weitere anzeigen';
+  }
 }

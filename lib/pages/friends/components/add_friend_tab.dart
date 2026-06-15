@@ -12,6 +12,7 @@ class AddFriendTab extends StatelessWidget {
   final bool isDemoUser;
   final Future<FriendListData> dataFuture;
   final VoidCallback onSendFriendRequest;
+  final Function(UserModel) onSendFriendRequestToUser;
   final VoidCallback onShareFriendCode;
   final VoidCallback onCopyFriendCode;
   final Function(FriendRequestModel) onAcceptRequest;
@@ -26,6 +27,7 @@ class AddFriendTab extends StatelessWidget {
     required this.isDemoUser,
     required this.dataFuture,
     required this.onSendFriendRequest,
+    required this.onSendFriendRequestToUser,
     required this.onShareFriendCode,
     required this.onCopyFriendCode,
     required this.onAcceptRequest,
@@ -173,7 +175,7 @@ class AddFriendTab extends StatelessWidget {
         } else if (snapshot.hasData) {
           final sentRequests = snapshot.data!.sentRequests;
           final receivedRequests = snapshot.data!.receivedRequests;
-          
+          final suggestions = snapshot.data!.suggestions;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -199,12 +201,24 @@ class AddFriendTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildSentRequests(context, sentRequests),
+                const SizedBox(height: 32),
+              ],
+              if (suggestions.isNotEmpty) ...[
+                _buildSuggestionsSection(context, suggestions),
               ],
             ],
           );
         }
         return const SizedBox.shrink();
       },
+    );
+  }
+
+  Widget _buildSuggestionsSection(BuildContext context, List<UserModel> suggestions) {
+    return _SuggestionsSection(
+      suggestions: suggestions,
+      isDemoUser: isDemoUser,
+      onSendFriendRequestToUser: onSendFriendRequestToUser,
     );
   }
 
@@ -279,6 +293,84 @@ class AddFriendTab extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SuggestionsSection extends StatefulWidget {
+  final List<UserModel> suggestions;
+  final bool isDemoUser;
+  final Function(UserModel) onSendFriendRequestToUser;
+
+  const _SuggestionsSection({
+    required this.suggestions,
+    required this.isDemoUser,
+    required this.onSendFriendRequestToUser,
+  });
+
+  @override
+  State<_SuggestionsSection> createState() => _SuggestionsSectionState();
+}
+
+class _SuggestionsSectionState extends State<_SuggestionsSection> {
+  static const int _previewCount = 4;
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasMore = widget.suggestions.length > _previewCount;
+    final visibleSuggestions = _isExpanded
+        ? widget.suggestions
+        : widget.suggestions.take(_previewCount).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.friendSuggestions,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: visibleSuggestions.length,
+          itemBuilder: (context, index) {
+            final user = visibleSuggestions[index];
+            return UserCard(
+              user: user,
+              rightWidget: IconButton(
+                onPressed: widget.isDemoUser
+                    ? null
+                    : () => widget.onSendFriendRequestToUser(user),
+                icon: const Icon(Icons.person_add),
+                style: IconButton.styleFrom(
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  padding: const EdgeInsets.all(8),
+                ),
+                tooltip: AppLocalizations.of(context)!.addFriends,
+              ),
+            );
+          },
+        ),
+        if (hasMore)
+          TextButton.icon(
+            onPressed: () => setState(() => _isExpanded = !_isExpanded),
+            icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+            label: Text(
+              _isExpanded
+                  ? AppLocalizations.of(context)!.showLess
+                  : AppLocalizations.of(context)!.showMore(
+                      widget.suggestions.length - _previewCount,
+                    ),
+            ),
+          ),
+      ],
     );
   }
 }
