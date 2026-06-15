@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:verleihapp/models/lendable_model.dart';
 import 'package:verleihapp/models/user_model.dart';
 import 'package:verleihapp/models/category_model.dart';
+import 'package:verleihapp/pages/post_lendable/post_lendable.dart';
 import 'package:verleihapp/pages/public_profile.dart';
 import 'package:verleihapp/services/favorite_service.dart';
 import 'package:verleihapp/services/lendable_service.dart';
@@ -48,6 +49,7 @@ class _LendablePageState extends State<LendablePage> {
   late Future<LendableModel> _lendableFuture;
   late Future<UserModel?> _userFuture;
   bool _isFavorite = false;
+  LendableModel? _loadedLendable;
 
   @override
   void initState() {
@@ -58,6 +60,9 @@ class _LendablePageState extends State<LendablePage> {
   void _loadData() {
     _lendableFuture = _lendableService.getLendable(widget.lendableId);
     _lendableFuture.then((lendable) {
+      if (mounted) {
+        setState(() => _loadedLendable = lendable);
+      }
       _userFuture = _userService.getUser(lendable.userId);
       _checkIfFavorite();
     });
@@ -193,11 +198,41 @@ class _LendablePageState extends State<LendablePage> {
     );
   }
 
+  bool get _isOwnArticle {
+    try {
+      final currentUserId = _userService.getCurrentUserId();
+      return _loadedLendable?.userId == currentUserId;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _navigateToEditLendable() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostLendablePage(lendable: _loadedLendable),
+      ),
+    ).then((_) {
+      if (mounted) {
+        setState(() {
+          _loadedLendable = null;
+        });
+        _loadData();
+      }
+    });
+  }
+
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: const Text('Details'),
       centerTitle: true,
       actions: [
+        if (_isOwnArticle)
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _userService.isDemoUser() ? null : _navigateToEditLendable,
+          ),
         IconButton(
           icon: Icon(_isFavorite ? Icons.favorite : Icons.favorite_border),
           onPressed: _userService.isDemoUser() ? null : _toggleFavorite,

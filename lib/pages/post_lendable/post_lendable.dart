@@ -5,7 +5,7 @@ import 'package:verleihapp/models/lendable_model.dart';
 import 'package:verleihapp/models/category_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
-import 'package:verleihapp/pages/post_lendable_success.dart';
+import 'package:verleihapp/pages/lendable.dart';
 import 'package:verleihapp/services/lendable_service.dart';
 import 'package:verleihapp/services/file_service.dart';
 import 'package:verleihapp/services/user_service.dart';
@@ -372,7 +372,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
     }
 
     setState(() => _isSaving = true);
-    
+    bool _didNavigateAway = false;
     try {
       final userId = _userService.getCurrentUserId();
       final lendableId = widget.lendable?.id ?? const Uuid().v4();
@@ -430,14 +430,19 @@ class _PostLendablePageState extends State<PostLendablePage> {
       }
 
       if (mounted) {
-        NavigationUtils.navigateToReplacement(context, PostLendableSuccessPage());
+        _didNavigateAway = true;
+        if (widget.lendable == null) {
+          NavigationUtils.navigateToReplacement(context, LendablePage(lendableId: lendableId));
+        } else {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       if (mounted) {
         SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
       }
     } finally {
-      if (mounted) {
+      if (mounted && !_didNavigateAway) {
         setState(() => _isSaving = false);
       }
     }
