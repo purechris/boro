@@ -344,6 +344,8 @@
   "errorOccurred": "Es ist ein Fehler aufgetreten",
   "emailNotConfirmed": "Bitte bestätige deine E-Mail-Adresse, um dich anzumelden.",
   "invalidCredentials": "Ungültige E-Mail-Adresse oder Passwort",
+  "imageSourceCamera": "Foto aufnehmen",
+  "imageSourceGallery": "Aus Galerie wählen",
   "invalidImageType": "Bewegtbilder (Videos, GIFs) werden nicht unterstützt",
   "fileTooLarge": "Das Bild ist zu groß. Maximale Größe: 15MB",
   "noInternetConnection": "Keine Internetverbindung",
@@ -435,6 +437,16 @@
   "groupNameTooLong": "Der Gruppenname ist zu lang (max. 20 Zeichen)",
   "renewGroupCodeConfirm": "Möchtest du den Gruppencode wirklich erneuern? Der alte Code wird danach sofort ungültig und neue Mitglieder können ihm nicht mehr beitreten.",
   "enterGroupCode": "Bitte gib einen Gruppencode ein",
-  "joinGroupSuccess": "Du bist der Gruppe beigetreten"
+  "joinGroupSuccess": "Du bist der Gruppe beigetreten",
+  "friendSuggestions": "Personen, die du kennen könntest",
+  "showLess": "Weniger anzeigen",
+  "showMore": "{count} weitere anzeigen",
+  "@showMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
 

@@ -1874,6 +1874,18 @@ abstract class AppLocalizations {
   /// **'Ungültige E-Mail-Adresse oder Passwort'**
   String get invalidCredentials;
 
+  /// No description provided for @imageSourceCamera.
+  ///
+  /// In de, this message translates to:
+  /// **'Foto aufnehmen'**
+  String get imageSourceCamera;
+
+  /// No description provided for @imageSourceGallery.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus Galerie wählen'**
+  String get imageSourceGallery;
+
   /// No description provided for @invalidImageType.
   ///
   /// In de, this message translates to:
@@ -2317,6 +2329,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Du bist der Gruppe beigetreten'**
   String get joinGroupSuccess;
+
+  /// No description provided for @friendSuggestions.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen, die du kennen könntest'**
+  String get friendSuggestions;
+
+  /// No description provided for @showLess.
+  ///
+  /// In de, this message translates to:
+  /// **'Weniger anzeigen'**
+  String get showLess;
+
+  /// No description provided for @showMore.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} weitere anzeigen'**
+  String showMore(int count);
 }
 
 class _AppLocalizationsDelegate

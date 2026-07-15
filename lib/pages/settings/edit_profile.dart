@@ -208,11 +208,40 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return newImageUrl;
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _showImageSourcePicker() async {
+    final source = await _showSourceBottomSheet();
+    if (source == null) return;
+    await _pickImageFromSource(source);
+  }
+
+  Future<ImageSource?> _showSourceBottomSheet() {
+    final localizations = AppLocalizations.of(context)!;
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(localizations.imageSourceCamera),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(localizations.imageSourceGallery),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromSource(ImageSource source) async {
     try {
-      final image = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final image = await _imagePicker.pickImage(source: source);
       if (image != null) {
-        // Prüfung auf Bewegtbilder (Videos, animierte GIFs)
         final String extension = image.path.split('.').last.toLowerCase();
         if (['mp4', 'mov', 'avi', 'gif', 'hevc'].contains(extension)) {
           if (mounted) {
@@ -220,8 +249,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           }
           return;
         }
-
-        // Prüfung auf Dateigröße (15 MB)
         final bytes = await image.readAsBytes();
         if (bytes.length > 15 * 1024 * 1024) {
           if (mounted) {
@@ -229,7 +256,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           }
           return;
         }
-
         setState(() => _selectedImage = image);
       }
     } catch (e) {
@@ -259,7 +285,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ProfileAvatarPicker(
                   selectedImage: _selectedImage,
                   imageUrl: imageUrl,
-                  onPickImage: _pickImage,
+                  onPickImage: _showImageSourcePicker,
                   onClearImage: () => setState(() {
                     _selectedImage = null;
                     imageUrl = null;
