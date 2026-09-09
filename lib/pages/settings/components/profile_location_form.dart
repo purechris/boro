@@ -3,53 +3,30 @@ import 'package:verleihapp/utils/location_utils.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
 
 /// Location fields for the edit profile page.
+///
+/// Only the postal code and country are shown; the resolved city is stored
+/// internally and saved to the profile, but not displayed. The lookup only
+/// happens when the user saves the form; if it fails, the caller shows a
+/// toast instead of an inline warning here, so this widget stays layout-stable.
 class ProfileLocationForm extends StatelessWidget {
   final String selectedCountryCode;
   final TextEditingController postalCodeController;
-  final TextEditingController locationController;
-  final FocusNode postalCodeFocusNode;
   final bool isFetchingLocation;
   final Function(String?) onCountryCodeChanged;
   final Function(String) onPostalCodeChanged;
-  final VoidCallback onTriggerLocationLookup;
 
   const ProfileLocationForm({
     super.key,
     required this.selectedCountryCode,
     required this.postalCodeController,
-    required this.locationController,
-    required this.postalCodeFocusNode,
     required this.isFetchingLocation,
     required this.onCountryCodeChanged,
     required this.onPostalCodeChanged,
-    required this.onTriggerLocationLookup,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildPostalCodeRow(context),
-        const SizedBox(height: 16),
-        _buildLocationField(context),
-      ],
-    );
-  }
-
-  Widget _buildLocationField(BuildContext context) {
-    return IgnorePointer(
-      child: TextFormField(
-        controller: locationController,
-        readOnly: true,
-        decoration: InputDecoration(
-          labelText: AppLocalizations.of(context)!.cityLocation,
-          border: const OutlineInputBorder(),
-          helperText: AppLocalizations.of(context)!.cityLocationHint,
-          fillColor: Colors.grey[100],
-          filled: true,
-        ),
-      ),
-    );
+    return _buildPostalCodeRow(context);
   }
 
   Widget _buildPostalCodeRow(BuildContext context) {
@@ -60,69 +37,59 @@ class ProfileLocationForm extends StatelessWidget {
         return a.compareTo(b);
       });
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 95,
-              child: DropdownButtonFormField<String>(
-                initialValue: selectedCountryCode,
-                selectedItemBuilder: (BuildContext context) {
-                  return sortedCountryCodes.map<Widget>((String key) {
-                    return Text(key);
-                  }).toList();
-                },
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.country,
-                  border: const OutlineInputBorder(),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+        SizedBox(
+          width: 95,
+          child: DropdownButtonFormField<String>(
+            initialValue: selectedCountryCode,
+            selectedItemBuilder: (BuildContext context) {
+              return sortedCountryCodes.map<Widget>((String key) {
+                return Text(key);
+              }).toList();
+            },
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.country,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+            ),
+            items: sortedCountryCodes.map((code) {
+              return DropdownMenuItem(
+                value: code,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 300),
+                  child: Text(
+                    '$code (${LocationUtils.getCountryName(context, code)})',
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
+                  ),
                 ),
-                items: sortedCountryCodes.map((code) {
-                  return DropdownMenuItem(
-                    value: code,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 300),
-                      child: Text(
-                        '$code (${LocationUtils.getCountryName(context, code)})',
-                        softWrap: false,
-                        overflow: TextOverflow.visible,
+              );
+            }).toList(),
+            onChanged: onCountryCodeChanged,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TextFormField(
+            controller: postalCodeController,
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.postalCode,
+              border: const OutlineInputBorder(),
+              suffixIcon: isFetchingLocation
+                  ? const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: onCountryCodeChanged,
-              ),
+                    )
+                  : null,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: postalCodeController,
-                focusNode: postalCodeFocusNode,
-                decoration: InputDecoration(
-                  labelText: AppLocalizations.of(context)!.postalCode,
-                  border: const OutlineInputBorder(),
-                  suffixIcon: isFetchingLocation
-                      ? const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : IconButton(
-                          icon: const Icon(Icons.search),
-                          tooltip: AppLocalizations.of(context)!.search,
-                          onPressed: isFetchingLocation ? null : onTriggerLocationLookup,
-                        ),
-                ),
-                keyboardType: TextInputType.text,
-                onChanged: onPostalCodeChanged,
-              ),
-            ),
-          ],
+            keyboardType: TextInputType.text,
+            onChanged: onPostalCodeChanged,
+          ),
         ),
       ],
     );

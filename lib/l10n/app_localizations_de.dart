@@ -156,6 +156,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cityLocationHint => '';
 
   @override
+  String get postalCodeNotResolved =>
+      'Ort konnte nicht ermittelt werden. Bitte Postleitzahl und Land prüfen.';
+
+  @override
   String get cityNoNumbers => 'Der Ort darf keine Zahl sein';
 
   @override

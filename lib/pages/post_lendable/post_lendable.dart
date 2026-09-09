@@ -39,9 +39,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _locationController = TextEditingController();
   final _postalCodeController = TextEditingController();
-  final FocusNode _postalCodeFocusNode = FocusNode();
   String? _selectedCategoryName;
   XFile? _selectedImage;
   String? imageUrl;
@@ -54,6 +52,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
   double? _latitude;
   double? _longitude;
   bool _isFetchingLocation = false;
+  bool _locationLookupFailed = false;
 
   // Kategorien und Typen
   List<CategoryModel> _categories = [];
@@ -76,7 +75,6 @@ class _PostLendablePageState extends State<PostLendablePage> {
   @override
   void initState() {
     super.initState();
-    _postalCodeFocusNode.addListener(_onPostalCodeFocusChange);
     _setupInitialData();
   }
 
@@ -84,10 +82,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _locationController.dispose();
     _postalCodeController.dispose();
-    _postalCodeFocusNode.removeListener(_onPostalCodeFocusChange);
-    _postalCodeFocusNode.dispose();
     super.dispose();
   }
 
@@ -104,10 +99,12 @@ class _PostLendablePageState extends State<PostLendablePage> {
           setState(() {
             _titleController.text = fullLendable.title;
             _descriptionController.text = fullLendable.description;
-            _locationController.text = fullLendable.city;
+            _resolvedCity = fullLendable.city;
             _postalCodeController.text = fullLendable.postalCode ?? '';
             _selectedCountryCode = fullLendable.countryCode ?? 'DE';
             _useCustomLocation = (fullLendable.postalCode != null && fullLendable.postalCode!.isNotEmpty);
+            _latitude = fullLendable.latitude;
+            _longitude = fullLendable.longitude;
             _selectedCategoryName = fullLendable.category;
             _selectedLendableType = fullLendable.type;
             _selectedVisibility = fullLendable.visibility;
@@ -130,9 +127,18 @@ class _PostLendablePageState extends State<PostLendablePage> {
     _loadUserGroups();
   }
 
+  bool get _isLocationResolved {
+    return !_useCustomLocation || _postalCodeController.text.trim().isEmpty || _latitude != null;
+  }
+
   void _onPostalCodeChanged(String value) {
-    if (value.trim().length < 3) {
-      _clearLocationFields();
+    if (_latitude != null || _longitude != null || _resolvedCity != null || _locationLookupFailed) {
+      setState(() {
+        _resolvedCity = null;
+        _latitude = null;
+        _longitude = null;
+        _locationLookupFailed = false;
+      });
     }
   }
 
@@ -146,48 +152,28 @@ class _PostLendablePageState extends State<PostLendablePage> {
           _resolvedCity = data.city;
           _latitude = data.latitude;
           _longitude = data.longitude;
-          _locationController.text = _resolvedCity ?? '';
+          _locationLookupFailed = false;
         });
       } else {
-        _clearLocationFields();
+        setState(() {
+          _resolvedCity = null;
+          _latitude = null;
+          _longitude = null;
+          _locationLookupFailed = true;
+        });
       }
     } catch (e) {
-      if (mounted && e.toString().contains('XMLHttpRequest')) {
-        SnackbarUtils.showError(
-          context, 
-          AppLocalizations.of(context)!.errorOccurred
-        );
+      if (mounted) {
+        setState(() => _locationLookupFailed = true);
+        if (e.toString().contains('XMLHttpRequest')) {
+          SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
+        }
       }
     } finally {
       if (mounted) {
         setState(() => _isFetchingLocation = false);
       }
     }
-  }
-
-  void _clearLocationFields() {
-    if (!mounted) return;
-    setState(() {
-      _resolvedCity = null;
-      _latitude = null;
-      _longitude = null;
-      _locationController.clear();
-    });
-  }
-
-  void _onPostalCodeFocusChange() {
-    if (!_postalCodeFocusNode.hasFocus) {
-      _triggerLocationLookup();
-    }
-  }
-
-  void _triggerLocationLookup() {
-    final trimmed = _postalCodeController.text.trim();
-    if (trimmed.length < 3) {
-      _clearLocationFields();
-      return;
-    }
-    _fetchLocationData(_selectedCountryCode, trimmed);
   }
 
   Future<void> _loadUserGroups() async {
@@ -341,31 +327,31 @@ class _PostLendablePageState extends State<PostLendablePage> {
                       useCustomLocation: _useCustomLocation,
                       selectedCountryCode: _selectedCountryCode,
                       postalCodeController: _postalCodeController,
-                      locationController: _locationController,
-                      postalCodeFocusNode: _postalCodeFocusNode,
                       isFetchingLocation: _isFetchingLocation,
                       onUseCustomLocationChanged: (bool value) {
                         setState(() {
                           _useCustomLocation = value;
                           if (!value) {
                             _postalCodeController.clear();
-                            _locationController.clear();
                             _resolvedCity = null;
                             _latitude = null;
                             _longitude = null;
+                            _locationLookupFailed = false;
                           }
                         });
                       },
                       onCountryCodeChanged: (val) {
                         if (val != null) {
-                          setState(() => _selectedCountryCode = val);
-                          if (_postalCodeController.text.isNotEmpty) {
-                            _fetchLocationData(val, _postalCodeController.text);
-                          }
+                          setState(() {
+                            _selectedCountryCode = val;
+                            _resolvedCity = null;
+                            _latitude = null;
+                            _longitude = null;
+                            _locationLookupFailed = false;
+                          });
                         }
                       },
                       onPostalCodeChanged: _onPostalCodeChanged,
-                      onTriggerLocationLookup: _triggerLocationLookup,
                     ),
                     const SizedBox(height: _bottomSpacing),
                     _buildSubmitButton(),
@@ -388,7 +374,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
     );
   }
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     // Validierung für spezifische Gruppen
@@ -398,7 +384,20 @@ class _PostLendablePageState extends State<PostLendablePage> {
     }
 
     setState(() => _isSaving = true);
-    bool _didNavigateAway = false;
+
+    final trimmedPostalCode = _postalCodeController.text.trim();
+    if (_useCustomLocation && trimmedPostalCode.isNotEmpty && _latitude == null) {
+      await _fetchLocationData(_selectedCountryCode, trimmedPostalCode);
+    }
+
+    if (!mounted) return;
+    if (!_isLocationResolved) {
+      setState(() => _isSaving = false);
+      SnackbarUtils.showError(context, AppLocalizations.of(context)!.postalCodeNotResolved);
+      return;
+    }
+
+    bool didNavigateAway = false;
     try {
       final userId = _userService.getCurrentUserId();
       final lendableId = widget.lendable?.id ?? const Uuid().v4();
@@ -432,7 +431,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
         id: lendableId,
         title: _titleController.text,
         description: _descriptionController.text,
-        city: _locationController.text,
+        city: _useCustomLocation ? (_resolvedCity ?? '') : '',
         category: _selectedCategoryName ?? '',
         type: _selectedLendableType,
         visibility: _selectedVisibility ?? 'indirect-contacts',
@@ -444,7 +443,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
         created: widget.lendable?.created ?? DateTime.now().toUtc(),
         borrowedBy: widget.lendable?.borrowedBy,
         countryCode: _useCustomLocation ? _selectedCountryCode : null,
-        postalCode: _useCustomLocation ? _postalCodeController.text.trim() : null,
+        postalCode: _useCustomLocation ? trimmedPostalCode : null,
         latitude: _useCustomLocation ? _latitude : null,
         longitude: _useCustomLocation ? _longitude : null,
       );
@@ -456,7 +455,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
       }
 
       if (mounted) {
-        _didNavigateAway = true;
+        didNavigateAway = true;
         if (widget.lendable == null) {
           NavigationUtils.navigateToReplacement(context, LendablePage(lendableId: lendableId));
         } else {
@@ -468,7 +467,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
         SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
       }
     } finally {
-      if (mounted && !_didNavigateAway) {
+      if (mounted && !didNavigateAway) {
         setState(() => _isSaving = false);
       }
     }

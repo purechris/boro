@@ -155,6 +155,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cityLocationHint => '';
 
   @override
+  String get postalCodeNotResolved =>
+      'Could not determine the city. Please check the postal code and country.';
+
+  @override
   String get cityNoNumbers => 'The location must not contain numbers';
 
   @override

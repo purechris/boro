@@ -63,6 +63,7 @@
   "aboutMe": "Über mich",
   "cityLocation": "Stadt/Ort (automatisch ermittelt)",
   "cityLocationHint": "",
+  "postalCodeNotResolved": "Ort konnte nicht ermittelt werden. Bitte Postleitzahl und Land prüfen.",
   "cityNoNumbers": "Der Ort darf keine Zahl sein",
   "contact": "Kontaktmöglichkeit",
   "contactHint": "z. B. E-Mail-Adresse oder Telefonnummer",

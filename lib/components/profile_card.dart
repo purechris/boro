@@ -41,7 +41,7 @@ class ProfileCard extends StatelessWidget {
             return Center(child: Text(AppLocalizations.of(context)!.userNotFound));
           }
 
-          // Benutzerdaten erfolgreich geladen
+          // User data successfully loaded
           UserModel user = userSnapshot.data!;
           return _buildProfile(user);
         },
@@ -51,7 +51,14 @@ class ProfileCard extends StatelessWidget {
     }
   }
 
-  /// Formatiert die Mitgliedsdauer basierend auf dem Erstellungsdatum
+  String? _locationText(UserModel user) {
+    final postalCode = user.postalCode?.trim() ?? '';
+    final city = user.city?.trim() ?? '';
+    final combined = [postalCode, city].where((part) => part.isNotEmpty).join(' ');
+    return combined.isEmpty ? null : combined;
+  }
+
+  /// Format the membership duration based on the creation date
   String _formatMembershipDuration(BuildContext context, DateTime createdDate) {
     final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
@@ -85,24 +92,6 @@ class ProfileCard extends StatelessWidget {
               style: TextStyle(fontSize: 16),
             ),
           ],
-          // Stadt mit Ort-Symbol
-          if (user.city != null && user.city!.isNotEmpty) ...[
-            SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.location_on),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    user.city!,
-                    style: TextStyle(fontSize: 16),
-                    softWrap: true,
-                  ),
-                ),
-              ],
-            ),
-          ],
           // Phone with phone number
           if (user.telephone != null && user.telephone!.isNotEmpty) ...[
             SizedBox(height: 16),
@@ -120,7 +109,25 @@ class ProfileCard extends StatelessWidget {
               ],
             ),
           ],
-          // Konto seit (berechnet aus created-Datum)
+          // Location text
+          if (_locationText(user) != null) ...[
+            SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _locationText(user)!,
+                    style: TextStyle(fontSize: 16),
+                    softWrap: true,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          // Membership duration
           SizedBox(height: 16),
           Row(
             children: [
@@ -134,7 +141,7 @@ class ProfileCard extends StatelessWidget {
               ),
             ],
           ),
-          // Anzahl Personen im Netzwerk (nur anzeigen wenn erfolgreich geladen)
+          // Network count
           if (user.id != null)
             FutureBuilder<Map<String, int>>(
               future: _getNetworkCounts(user.id!),
@@ -210,7 +217,7 @@ class ProfileCard extends StatelessWidget {
                     ],
                   );
                 }
-                return SizedBox.shrink(); // Zeige nichts wenn keine gemeinsamen Freunde
+                return SizedBox.shrink(); // Show nothing if no mutual friends
               },
             ),
         ],
@@ -260,10 +267,10 @@ class ProfileCard extends StatelessWidget {
     return await friendService.getFriendNetworkCounts(userId);
   }
 
-  /// Baut den Profil-Header mit Avatar, Name und Badges
+  /// Build the profile header with avatar, name and badges
   Widget _buildProfileHeader(UserModel user) {
     if (user.id == null) {
-      // Keine User-ID: Name zentriert anzeigen
+      // No user ID: Show name centered
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

@@ -28,10 +28,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _locationController = TextEditingController();
   final _contactController = TextEditingController();
   final _postalCodeController = TextEditingController();
-  final FocusNode _postalCodeFocusNode = FocusNode();
 
   // State
   XFile? _selectedImage;
@@ -42,6 +40,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   double? _latitude;
   double? _longitude;
   bool _isFetchingLocation = false;
+  bool _locationLookupFailed = false;
   // UI Constants
   static const _padding = 16.0;
   static const _spacing = 16.0;
@@ -51,7 +50,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    _postalCodeFocusNode.addListener(_onPostalCodeFocusChange);
     _loadUserData();
   }
 
@@ -59,11 +57,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _locationController.dispose();
     _contactController.dispose();
     _postalCodeController.dispose();
-    _postalCodeFocusNode.removeListener(_onPostalCodeFocusChange);
-    _postalCodeFocusNode.dispose();
     super.dispose();
   }
 
@@ -75,10 +70,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
         setState(() {
           _nameController.text = user.firstName;
           _descriptionController.text = user.description ?? '';
-          _locationController.text = user.city ?? '';
+          _resolvedCity = user.city;
           _contactController.text = user.telephone ?? '';
           _postalCodeController.text = user.postalCode ?? '';
           _selectedCountryCode = user.countryCode ?? 'DE';
+          _latitude = user.latitude;
+          _longitude = user.longitude;
           imageUrl = user.imageUrl;
         });
       }
@@ -89,9 +86,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+  bool get _isLocationResolved {
+    return _postalCodeController.text.trim().isEmpty || _latitude != null;
+  }
+
   void _onPostalCodeChanged(String value) {
-    if (value.trim().length < 3) {
-      _clearLocationFields();
+    if (_latitude != null || _longitude != null || _resolvedCity != null || _locationLookupFailed) {
+      setState(() {
+        _resolvedCity = null;
+        _latitude = null;
+        _longitude = null;
+        _locationLookupFailed = false;
+      });
     }
   }
 
@@ -105,17 +111,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _resolvedCity = data.city;
           _latitude = data.latitude;
           _longitude = data.longitude;
-          _locationController.text = _resolvedCity ?? '';
+          _locationLookupFailed = false;
         });
       } else {
-        _clearLocationFields();
+        setState(() {
+          _resolvedCity = null;
+          _latitude = null;
+          _longitude = null;
+          _locationLookupFailed = true;
+        });
       }
     } catch (e) {
-      if (mounted && e.toString().contains('XMLHttpRequest')) {
-        SnackbarUtils.showError(
-          context, 
-          AppLocalizations.of(context)!.errorOccurred,
-        );
+      if (mounted) {
+        setState(() => _locationLookupFailed = true);
+        if (e.toString().contains('XMLHttpRequest')) {
+          SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
+        }
       }
     } finally {
       if (mounted) {
@@ -124,35 +135,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  void _clearLocationFields() {
-    if (!mounted) return;
-    setState(() {
-      _resolvedCity = null;
-      _latitude = null;
-      _longitude = null;
-      _locationController.clear();
-    });
-  }
-
-  void _onPostalCodeFocusChange() {
-    if (!_postalCodeFocusNode.hasFocus) {
-      _triggerLocationLookup();
-    }
-  }
-
-  void _triggerLocationLookup() {
-    final trimmed = _postalCodeController.text.trim();
-    if (trimmed.length < 3) {
-      _clearLocationFields();
-      return;
-    }
-    _fetchLocationData(_selectedCountryCode, trimmed);
-  }
-
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
+
+    final trimmedPostalCode = _postalCodeController.text.trim();
+    if (trimmedPostalCode.isNotEmpty && _latitude == null) {
+      await _fetchLocationData(_selectedCountryCode, trimmedPostalCode);
+    }
+
+    if (!mounted) return;
+    if (!_isLocationResolved) {
+      setState(() => _isSaving = false);
+      SnackbarUtils.showError(context, AppLocalizations.of(context)!.postalCodeNotResolved);
+      return;
+    }
+
     try {
       final currentUser = await _userService.getCurrentUser();
       if (!mounted) return;
@@ -165,13 +164,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
         id: currentUser.id,
         firstName: _nameController.text.trim(),
         description: _descriptionController.text,
-        city: _locationController.text,
+        city: _resolvedCity ?? '',
         telephone: _contactController.text,
         imageUrl: newImageUrl,
         created: currentUser.created,
         friendCode: currentUser.friendCode,
         countryCode: _selectedCountryCode,
-        postalCode: _postalCodeController.text.trim(),
+        postalCode: trimmedPostalCode,
         latitude: _latitude,
         longitude: _longitude,
       );
@@ -301,19 +300,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ProfileLocationForm(
                   selectedCountryCode: _selectedCountryCode,
                   postalCodeController: _postalCodeController,
-                  locationController: _locationController,
-                  postalCodeFocusNode: _postalCodeFocusNode,
                   isFetchingLocation: _isFetchingLocation,
                   onCountryCodeChanged: (val) {
                     if (val != null) {
-                      setState(() => _selectedCountryCode = val);
-                      if (_postalCodeController.text.isNotEmpty) {
-                        _fetchLocationData(val, _postalCodeController.text);
-                      }
+                      setState(() {
+                        _selectedCountryCode = val;
+                        _resolvedCity = null;
+                        _latitude = null;
+                        _longitude = null;
+                        _locationLookupFailed = false;
+                      });
                     }
                   },
                   onPostalCodeChanged: _onPostalCodeChanged,
-                  onTriggerLocationLookup: _triggerLocationLookup,
                 ),
                 const SizedBox(height: 24),
                 _buildSubmitButton(),

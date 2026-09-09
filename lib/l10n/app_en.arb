@@ -60,6 +60,7 @@
   "aboutMe": "About Me",
   "cityLocation": "City/Location (automatically determined)",
   "cityLocationHint": "",
+  "postalCodeNotResolved": "Could not determine the city. Please check the postal code and country.",
   "cityNoNumbers": "The location must not contain numbers",
   "contact": "Contact",
   "contactHint": "e.g. email address or phone number",

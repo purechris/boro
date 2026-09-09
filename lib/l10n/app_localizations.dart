@@ -374,6 +374,12 @@ abstract class AppLocalizations {
   /// **''**
   String get cityLocationHint;
 
+  /// No description provided for @postalCodeNotResolved.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort konnte nicht ermittelt werden. Bitte Postleitzahl und Land prüfen.'**
+  String get postalCodeNotResolved;
+
   /// No description provided for @cityNoNumbers.
   ///
   /// In de, this message translates to:
