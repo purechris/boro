@@ -18,18 +18,20 @@ class PostLendableSuccessPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildSuccessIcon(),
-            SizedBox(height: _spacing),
-            _buildSuccessTitle(),
-            SizedBox(height: _spacing),
-            _buildSuccessMessage(),
-            SizedBox(height: _bottomSpacing),
-            _buildContinueButton(context),
-          ],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildSuccessIcon(),
+              SizedBox(height: _spacing),
+              _buildSuccessTitle(),
+              SizedBox(height: _spacing),
+              _buildSuccessMessage(),
+              SizedBox(height: _bottomSpacing),
+              _buildContinueButton(context),
+            ],
+          ),
         ),
       ),
     );

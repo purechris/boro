@@ -17,6 +17,7 @@ class LendableModel {
   final String userId;
   final DateTime created;
   final String? borrowedBy;
+  final bool borrowedByPublic;
   final String? countryCode;
   final String? postalCode;
   final double? latitude;
@@ -37,6 +38,7 @@ class LendableModel {
     required this.userId,
     required this.created,
     this.borrowedBy,
+    this.borrowedByPublic = false,
     this.countryCode,
     this.postalCode,
     this.latitude,
@@ -44,6 +46,9 @@ class LendableModel {
   });
 
   bool get isBorrowed => borrowedBy != null && borrowedBy!.trim().isNotEmpty;
+
+  /// Gibt an, ob der Name der ausleihenden Person allen Betrachtern angezeigt werden soll.
+  bool get isBorrowerNameVisiblePublicly => isBorrowed && borrowedByPublic;
 
   /// Gibt den lokalisierten Typ-Text für Formulare zurück
   String getDisplayedTypeForm(BuildContext context) {
@@ -92,6 +97,7 @@ class LendableModel {
       'user_id': userId,
       'created': created.toUtc().toIso8601String(),
       'borrowed_by': borrowedBy,
+      'borrowed_by_public': borrowedByPublic,
       'country_code': countryCode,
       'postal_code': postalCode,
       'latitude': latitude,
@@ -119,6 +125,7 @@ class LendableModel {
           ? DateTime.parse(json['created'].toString()).toLocal()
           : DateTime.now(),
       borrowedBy: json['borrowed_by']?.toString(),
+      borrowedByPublic: json['borrowed_by_public'] == true,
       countryCode: json['country_code']?.toString(),
       postalCode: json['postal_code']?.toString(),
       latitude: _parseDouble(json['latitude']),
@@ -144,6 +151,7 @@ class LendableModel {
           ? DateTime.parse(json['created'].toString()).toLocal()
           : DateTime.now(),
       borrowedBy: json['borrowed_by']?.toString(),
+      borrowedByPublic: json['borrowed_by_public'] == true,
       countryCode: json['country_code']?.toString(),
       postalCode: json['postal_code']?.toString(),
       latitude: _parseDouble(json['lendable_latitude']),

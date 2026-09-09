@@ -10,8 +10,6 @@ class LazyImageWidget extends StatefulWidget {
   final double height;
   final BoxFit fit;
   final Widget placeholder;
-  final double? cacheWidth;
-  final double? cacheHeight;
 
   const LazyImageWidget({
     super.key,
@@ -20,8 +18,6 @@ class LazyImageWidget extends StatefulWidget {
     required this.height,
     this.fit = BoxFit.cover,
     required this.placeholder,
-    this.cacheWidth,
-    this.cacheHeight,
   });
 
   @override
@@ -29,6 +25,8 @@ class LazyImageWidget extends StatefulWidget {
 }
 
 class _LazyImageWidgetState extends State<LazyImageWidget> {
+  static const int _maxCacheDimension = 500;
+
   bool _shouldLoad = false;
   bool _hasBeenVisible = false;
 
@@ -58,15 +56,11 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
                 fit: widget.fit,
                 placeholder: (context, url) => widget.placeholder,
                 errorWidget: (context, url, error) => widget.placeholder,
-                // Cache configuration for optimal performance
-                // Fixed cache sizes for sharp display on all devices
+                // Cache configuration
                 cacheKey: widget.imageUrl,
-                maxWidthDiskCache: 500,
-                maxHeightDiskCache: 500,
-                // MemCache: Fixed values for sharp display
-                memCacheWidth: 500,
-                memCacheHeight: 500,
-                // Consistent animation for all images (including from cache)
+                maxWidthDiskCache: _maxCacheDimension,
+                maxHeightDiskCache: _maxCacheDimension,
+                memCacheWidth: _maxCacheDimension,
                 fadeInDuration: const Duration(milliseconds: 200),
               )
             : widget.placeholder,

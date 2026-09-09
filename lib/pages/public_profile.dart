@@ -50,6 +50,11 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
       _friendStatusKey = UniqueKey();
     });
   }
+
+  Future<void> _refreshData() async {
+    ProfileCard.clearCache();
+    await _loadData();
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -63,7 +68,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
 
   Widget _buildBody() {
     return RefreshIndicator(
-      onRefresh: _loadData,
+      onRefresh: _refreshData,
       child: FutureBuilder<UserModel?>(
         future: _userFuture,
         builder: (context, userSnapshot) {

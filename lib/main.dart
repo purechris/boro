@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
 import 'dart:ui';
@@ -123,7 +124,14 @@ class _MyAppState extends State<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       builder: (context, child) {
-        return ConnectivityWrapper(child: child!);
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
+            systemNavigationBarIconBrightness: Brightness.dark,
+          ),
+          child: ConnectivityWrapper(child: child!),
+        );
       },
       home: _user == null ? PreLogin() : const HomePage(),
       navigatorKey: appNavigatorKey,

@@ -48,6 +48,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get enterBorrowerName => 'Bitte einen Namen eingeben';
 
   @override
+  String get showBorrowerNamePublicly => 'Name öffentlich anzeigen';
+
+  @override
+  String get showBorrowerNamePubliclyHint =>
+      'Personen in deinem Netzwerk sehen, an wen der Artikel verliehen ist';
+
+  @override
   String get markAsReturned => 'Als zurückgegeben markieren';
 
   @override
@@ -154,6 +161,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cityLocationHint => '';
+
+  @override
+  String get postalCodeNotResolved =>
+      'Ort konnte nicht ermittelt werden. Bitte Postleitzahl und Land prüfen.';
 
   @override
   String get cityNoNumbers => 'Der Ort darf keine Zahl sein';
@@ -764,10 +775,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get supportDeveloperText =>
-      'Wenn dir die App gefällt, kannst du mich mit einer Spende unterstützen :) Deine Unterstützung hilft mir, die Serverkosten zu decken und die App weiterzuentwickeln. Klicke auf den Button, um eine Spende über PayPal zu tätigen.';
+      'Wenn dir die App gefällt, kannst du mich mit einer Spende unterstützen :) Deine Unterstützung hilft mir, die Serverkosten zu decken und die App weiterzuentwickeln. Tippe auf den Link, um eine Spende über PayPal zu tätigen, oder halte ihn gedrückt, um ihn zu kopieren.';
 
   @override
   String get paypalDonateLink => 'PayPal Spendenlink';
+
+  @override
+  String get paypalDonateLinkHint =>
+      'Tippen zum Öffnen, gedrückt halten zum Kopieren';
+
+  @override
+  String get linkCopiedToClipboard => 'Link in die Zwischenablage kopiert';
 
   @override
   String get thanksForSupport => 'Danke für deine Unterstützung!';

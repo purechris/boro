@@ -60,9 +60,75 @@ class LocationUtils {
     }
   }
 
+  /// Regular expressions describing a "complete" postal code per country.
+  /// Used only to decide whether an automatic lookup should be triggered
+  /// while the user is still typing (debounced), not for final validation.
+  static final Map<String, RegExp> _postalCodePatterns = {
+    'DE': RegExp(r'^\d{5}$'),
+    'AT': RegExp(r'^\d{4}$'),
+    'CH': RegExp(r'^\d{4}$'),
+    'US': RegExp(r'^\d{5}(-\d{4})?$'),
+    'CA': RegExp(r'^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$'),
+    'AU': RegExp(r'^\d{4}$'),
+    'NZ': RegExp(r'^\d{4}$'),
+    'NO': RegExp(r'^\d{4}$'),
+    'SE': RegExp(r'^\d{3}\s?\d{2}$'),
+    'PL': RegExp(r'^\d{2}-?\d{3}$'),
+    'CZ': RegExp(r'^\d{3}\s?\d{2}$'),
+    'NL': RegExp(r'^\d{4}\s?[A-Za-z]{2}$'),
+    'BE': RegExp(r'^\d{4}$'),
+    'LU': RegExp(r'^\d{4}$'),
+    'FR': RegExp(r'^\d{5}$'),
+    'IT': RegExp(r'^\d{5}$'),
+    'ES': RegExp(r'^\d{5}$'),
+    // GB and IE have highly variable formats and are intentionally omitted;
+    // callers fall back to the default heuristic below for those.
+  };
+
+  /// In-flight/completed lookups keyed by country code + postal code.
+  /// Prevents duplicate Nominatim calls for the same input (e.g. triggered
+  /// by both losing focus and pressing the search button), and avoids
+  /// re-fetching a result that is already known, including "not found".
+  static final Map<String, Future<PostalLookupResult?>> _lookupCache = {};
+
+  static String _cacheKey(String countryCode, String postalCode) {
+    return '${countryCode.trim().toUpperCase()}|${postalCode.trim().toUpperCase()}';
+  }
+
+  /// Returns whether [postalCode] looks complete for [countryCode], i.e.
+  /// whether it is worth triggering an automatic lookup already.
+  /// Falls back to a minimum length heuristic for countries without a
+  /// known fixed format.
+  static bool isPostalCodeComplete(String countryCode, String postalCode) {
+    final trimmed = postalCode.trim();
+    final pattern = _postalCodePatterns[countryCode.trim().toUpperCase()];
+    if (pattern == null) return trimmed.length >= 3;
+    return pattern.hasMatch(trimmed);
+  }
+
   /// Fetches location data (city, latitude, longitude) from Nominatim.
   /// Returns a [PostalLookupResult] or null if not found.
-  static Future<PostalLookupResult?> fetchLocationData(String countryCode, String postalCode) async {
+  ///
+  /// Results (including "not found") are cached per country/postal code
+  /// combination for the lifetime of the app session, so repeated lookups
+  /// of the same value never trigger another network request. Network
+  /// errors are not cached, so a retry is possible.
+  static Future<PostalLookupResult?> fetchLocationData(String countryCode, String postalCode) {
+    final key = _cacheKey(countryCode, postalCode);
+    final cached = _lookupCache[key];
+    if (cached != null) return cached;
+
+    final future = _fetchLocationDataFromApi(countryCode, postalCode);
+    _lookupCache[key] = future;
+    future.catchError((Object _) {
+      // Don't cache failures (e.g. network errors/timeouts) so the user can retry.
+      _lookupCache.remove(key);
+      return null;
+    });
+    return future;
+  }
+
+  static Future<PostalLookupResult?> _fetchLocationDataFromApi(String countryCode, String postalCode) async {
     final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
       'postalcode': postalCode,
       'countrycodes': countryCode.toLowerCase(),
@@ -71,45 +137,41 @@ class LocationUtils {
       'addressdetails': '1',
     });
 
-    try {
-      final response = await http.get(
-        uri,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Boro (https://www.boro-app.de/)',
-        },
-      ).timeout(const Duration(seconds: 5));
+    final response = await http.get(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Boro (https://www.boro-app.de/)',
+      },
+    ).timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data is List && data.isNotEmpty) {
-          final place = data.first;
-          final latValue = place['lat'];
-          final lonValue = place['lon'];
-          final lat = latValue != null ? double.tryParse(latValue.toString()) : null;
-          final lon = lonValue != null ? double.tryParse(lonValue.toString()) : null;
-          final address = place['address'] as Map<String, dynamic>?;
-          final city = address?['city'] ??
-              address?['town'] ??
-              address?['village'] ??
-              address?['hamlet'] ??
-              place['display_name']
-                  ?.toString()
-                  .split(',')
-                  .first
-                  .trim();
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data is List && data.isNotEmpty) {
+        final place = data.first;
+        final latValue = place['lat'];
+        final lonValue = place['lon'];
+        final lat = latValue != null ? double.tryParse(latValue.toString()) : null;
+        final lon = lonValue != null ? double.tryParse(lonValue.toString()) : null;
+        final address = place['address'] as Map<String, dynamic>?;
+        final city = address?['city'] ??
+            address?['town'] ??
+            address?['village'] ??
+            address?['hamlet'] ??
+            place['display_name']
+                ?.toString()
+                .split(',')
+                .first
+                .trim();
 
-          if (lat != null && lon != null) {
-            return PostalLookupResult(
-              city: city,
-              latitude: lat,
-              longitude: lon,
-            );
-          }
+        if (lat != null && lon != null) {
+          return PostalLookupResult(
+            city: city,
+            latitude: lat,
+            longitude: lon,
+          );
         }
       }
-    } catch (e) {
-      rethrow;
     }
     return null;
   }

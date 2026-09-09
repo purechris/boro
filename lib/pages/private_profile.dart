@@ -45,6 +45,11 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
     });
   }
 
+  Future<void> _refreshData() async {
+    ProfileCard.clearCache();
+    await _loadData();
+  }
+
   void _onDelete(bool success, String? error) {
     if (success) {
       SnackbarUtils.showSuccess(context, AppLocalizations.of(context)!.articleDeletedSuccess);
@@ -205,7 +210,7 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
 
   Widget _buildBody() {
     return RefreshIndicator(
-      onRefresh: _loadData,
+      onRefresh: _refreshData,
       child: FutureBuilder<List<Map<LendableModel, UserModel>>>(
         future: _lendablesWithUsers,
         builder: (context, snapshot) {

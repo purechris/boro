@@ -176,6 +176,18 @@ abstract class AppLocalizations {
   /// **'Bitte einen Namen eingeben'**
   String get enterBorrowerName;
 
+  /// No description provided for @showBorrowerNamePublicly.
+  ///
+  /// In de, this message translates to:
+  /// **'Name öffentlich anzeigen'**
+  String get showBorrowerNamePublicly;
+
+  /// No description provided for @showBorrowerNamePubliclyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen in deinem Netzwerk sehen, an wen der Artikel verliehen ist'**
+  String get showBorrowerNamePubliclyHint;
+
   /// No description provided for @markAsReturned.
   ///
   /// In de, this message translates to:
@@ -373,6 +385,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **''**
   String get cityLocationHint;
+
+  /// No description provided for @postalCodeNotResolved.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort konnte nicht ermittelt werden. Bitte Postleitzahl und Land prüfen.'**
+  String get postalCodeNotResolved;
 
   /// No description provided for @cityNoNumbers.
   ///
@@ -1529,7 +1547,7 @@ abstract class AppLocalizations {
   /// No description provided for @supportDeveloperText.
   ///
   /// In de, this message translates to:
-  /// **'Wenn dir die App gefällt, kannst du mich mit einer Spende unterstützen :) Deine Unterstützung hilft mir, die Serverkosten zu decken und die App weiterzuentwickeln. Klicke auf den Button, um eine Spende über PayPal zu tätigen.'**
+  /// **'Wenn dir die App gefällt, kannst du mich mit einer Spende unterstützen :) Deine Unterstützung hilft mir, die Serverkosten zu decken und die App weiterzuentwickeln. Tippe auf den Link, um eine Spende über PayPal zu tätigen, oder halte ihn gedrückt, um ihn zu kopieren.'**
   String get supportDeveloperText;
 
   /// No description provided for @paypalDonateLink.
@@ -1537,6 +1555,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'PayPal Spendenlink'**
   String get paypalDonateLink;
+
+  /// No description provided for @paypalDonateLinkHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippen zum Öffnen, gedrückt halten zum Kopieren'**
+  String get paypalDonateLinkHint;
+
+  /// No description provided for @linkCopiedToClipboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Link in die Zwischenablage kopiert'**
+  String get linkCopiedToClipboard;
 
   /// No description provided for @thanksForSupport.
   ///

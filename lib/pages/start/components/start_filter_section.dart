@@ -26,13 +26,14 @@ class StartFilterSection extends StatelessWidget {
     final String sorting = currentFilters.sorting;
     final String type = currentFilters.type;
     final int? maxDistanceKm = currentFilters.maxDistanceKm;
-    
+
     int activeFilterCount = 0;
     if (currentFilters.category != AppConstants.filterAll) activeFilterCount++;
     if (currentFilters.type != AppConstants.filterAll) activeFilterCount++;
     if (currentFilters.maxDistanceKm != null) activeFilterCount++;
-    
-    final bool hasActiveFilters = activeFilterCount > 0 || sorting != SortingMode.newest.value;
+
+    final bool hasActiveFilters =
+        activeFilterCount > 0 || sorting != SortingMode.newest.value;
 
     String sortingLabel = '';
     if (sorting == SortingMode.newest.value) {
@@ -50,7 +51,8 @@ class StartFilterSection extends StatelessWidget {
     final types = LendableModel.getLendableTypes(context);
     String typeLabel = l10n.allOfferTypes;
     if (type != AppConstants.filterAll) {
-      final selectedType = types.firstWhere((t) => t['value'] == type, orElse: () => {});
+      final selectedType =
+          types.firstWhere((t) => t['value'] == type, orElse: () => {});
       if (selectedType.isNotEmpty) {
         typeLabel = 'Nur: ${selectedType['displayCard']!}';
       }
@@ -93,23 +95,27 @@ class StartFilterSection extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: ActionChip(
                 onPressed: onResetFilters,
-                label: const Icon(Icons.filter_alt_off_outlined, size: 20, color: Colors.grey),
+                label: const Icon(Icons.filter_alt_off_outlined,
+                    size: 20, color: Colors.grey),
                 backgroundColor: Colors.grey.withValues(alpha: 0.1),
                 shape: const CircleBorder(),
                 padding: EdgeInsets.zero,
                 side: BorderSide.none,
               ),
             ),
-          ...chips.expand((chip) => [
-            _buildActionChip(
-              context,
-              label: chip.label,
-              onTap: chip.onTap,
-              isActive: chip.isActive,
-              icon: chip.icon,
-            ),
-            const SizedBox(width: 8),
-          ]).toList()..removeLast(),
+          ...chips
+              .expand((chip) => [
+                    _buildActionChip(
+                      context,
+                      label: chip.label,
+                      onTap: chip.onTap,
+                      isActive: chip.isActive,
+                      icon: chip.icon,
+                    ),
+                    const SizedBox(width: 8),
+                  ])
+              .toList()
+            ..removeLast(),
         ],
       ),
     );
@@ -138,10 +144,12 @@ class StartFilterSection extends StatelessWidget {
           const Icon(Icons.arrow_drop_down, size: 18, color: Colors.black54),
         ],
       ),
-      backgroundColor: isActive ? Colors.green.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.1),
+      backgroundColor: isActive
+          ? Colors.green.withValues(alpha: 0.3)
+          : Colors.grey.withValues(alpha: 0.1),
       elevation: 0,
       pressElevation: 0,
-      side: isActive 
+      side: isActive
           ? const BorderSide(color: Colors.green, width: 1)
           : BorderSide.none,
       shape: RoundedRectangleBorder(
@@ -160,23 +168,29 @@ class StartFilterSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child:               RadioGroup<String>(
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: RadioGroup<String>(
                 groupValue: currentFilters.sorting,
                 onChanged: (val) => _updateSorting(context, val!),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                       child: Text(
                         l10n.sorting,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                     ListTile(
@@ -184,25 +198,30 @@ class StartFilterSection extends StatelessWidget {
                       leading: Radio<String>(
                         value: SortingMode.newest.value,
                       ),
-                      onTap: () => _updateSorting(context, SortingMode.newest.value),
+                      onTap: () =>
+                          _updateSorting(context, SortingMode.newest.value),
                     ),
                     ListTile(
                       title: Text(l10n.oldest),
                       leading: Radio<String>(
                         value: SortingMode.oldest.value,
                       ),
-                      onTap: () => _updateSorting(context, SortingMode.oldest.value),
+                      onTap: () =>
+                          _updateSorting(context, SortingMode.oldest.value),
                     ),
                     ListTile(
                       title: Text(l10n.alphabetical),
                       leading: Radio<String>(
                         value: SortingMode.alphabetical.value,
                       ),
-                      onTap: () => _updateSorting(context, SortingMode.alphabetical.value),
+                      onTap: () => _updateSorting(
+                          context, SortingMode.alphabetical.value),
                     ),
                   ],
                 ),
               ),
+            ),
+          ),
         );
       },
     );
@@ -219,23 +238,29 @@ class StartFilterSection extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child:               RadioGroup<String>(
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: RadioGroup<String>(
                 groupValue: currentFilters.type,
                 onChanged: (val) => _updateType(context, val!),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                       child: Text(
                         l10n.offerType,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                     ListTile(
@@ -246,15 +271,18 @@ class StartFilterSection extends StatelessWidget {
                       onTap: () => _updateType(context, AppConstants.filterAll),
                     ),
                     ...types.map((t) => ListTile(
-                      title: Text(t['displayCard']!),
-                      leading: Radio<String>(
-                        value: t['value'] ?? AppConstants.filterAll,
-                      ),
-                      onTap: () => _updateType(context, t['value'] ?? AppConstants.filterAll),
-                    )),
+                          title: Text(t['displayCard']!),
+                          leading: Radio<String>(
+                            value: t['value'] ?? AppConstants.filterAll,
+                          ),
+                          onTap: () => _updateType(
+                              context, t['value'] ?? AppConstants.filterAll),
+                        )),
                   ],
                 ),
               ),
+            ),
+          ),
         );
       },
     );
@@ -267,80 +295,97 @@ class StartFilterSection extends StatelessWidget {
 
   void _showDistanceBottomSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    double tempDistance = (currentFilters.maxDistanceKm ?? _unlimitedDistance).toDouble();
+    double tempDistance =
+        (currentFilters.maxDistanceKm ?? _unlimitedDistance).toDouble();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final bool isUnlimited = tempDistance >= _unlimitedDistance;
-            return Container(
-              padding: EdgeInsets.only(
-                top: 20,
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (context, setModalState) {
+              final bool isUnlimited = tempDistance >= _unlimitedDistance;
+              return SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.only(
+                    top: 20,
+                    left: 20,
+                    right: 20,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.maxDistanceLabel,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.maxDistanceLabel,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            isUnlimited
+                                ? l10n.distanceUnlimited
+                                : l10n
+                                    .distanceFilterValue(tempDistance.round()),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green),
+                          ),
+                        ],
                       ),
-                      Text(
-                        isUnlimited ? l10n.distanceUnlimited : l10n.distanceFilterValue(tempDistance.round()),
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                      const SizedBox(height: 20),
+                      Slider(
+                        value: tempDistance.clamp(0, _unlimitedDistance),
+                        min: 0,
+                        max: _unlimitedDistance,
+                        onChanged: (val) {
+                          setModalState(() {
+                            if (val >= 202.5) {
+                              tempDistance = _unlimitedDistance;
+                            } else {
+                              tempDistance = (val / 5).round() * 5.0;
+                            }
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            onFiltersChanged(currentFilters.copyWith(
+                              maxDistanceKm: tempDistance >= _unlimitedDistance
+                                  ? null
+                                  : tempDistance.toInt(),
+                              resetMaxDistanceKm:
+                                  tempDistance >= _unlimitedDistance,
+                            ));
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: Text(l10n.applyFilter),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  Slider(
-                    value: tempDistance.clamp(0, _unlimitedDistance),
-                    min: 0,
-                    max: _unlimitedDistance,
-                    onChanged: (val) {
-                      setModalState(() {
-                        if (val >= 202.5) {
-                          tempDistance = _unlimitedDistance;
-                        } else {
-                          tempDistance = (val / 5).round() * 5.0;
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        onFiltersChanged(currentFilters.copyWith(
-                          maxDistanceKm: tempDistance >= _unlimitedDistance ? null : tempDistance.toInt(),
-                          resetMaxDistanceKm: tempDistance >= _unlimitedDistance,
-                        ));
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: Text(l10n.applyFilter),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         );
       },
     );

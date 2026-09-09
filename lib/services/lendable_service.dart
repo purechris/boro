@@ -59,6 +59,7 @@ class LendableService {
       final updateJson = lendable.toJson();
       if (lendable.borrowedBy == null) {
         updateJson.remove('borrowed_by');
+        updateJson.remove('borrowed_by_public');
       }
       await _db.from(AppConstants.tableLendables).update(updateJson).eq(AppConstants.keyId, lendable.id);
 
@@ -88,11 +89,14 @@ class LendableService {
   }
 
   /// Set the name of the person who borrowed this item.
-  Future<void> setBorrowedBy(String lendableId, String? borrowerName) async {
+  /// If [isPublic] is true, the name is shown to all viewers of the item.
+  Future<void> setBorrowedBy(String lendableId, String? borrowerName, {bool isPublic = false}) async {
     try {
       final String? trimmed = borrowerName?.trim();
+      final bool isCleared = trimmed == null || trimmed.isEmpty;
       await _db.from(AppConstants.tableLendables).update({
-        'borrowed_by': (trimmed == null || trimmed.isEmpty) ? null : trimmed,
+        'borrowed_by': isCleared ? null : trimmed,
+        'borrowed_by_public': isCleared ? false : isPublic,
       }).eq(AppConstants.keyId, lendableId);
     } catch (e) {
       throw Exception('Set borrowed_by failed: $e');
