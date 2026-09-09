@@ -247,6 +247,14 @@ class ProfileCard extends StatelessWidget {
     return await friendService.getMutualFriends(currentUserId, profileUserId);
   }
 
+  /// Clears all cached network statistics and mutual-friends data.
+  /// Call this before a forced refresh (e.g. pull-to-refresh) so the
+  /// profile card fetches up-to-date data instead of stale cached futures.
+  static void clearCache() {
+    _networkCountsCache.clear();
+    _mutualFriendsCache.clear();
+  }
+
   /// Load network statistics for a user (with cache).
   Future<Map<String, int>> _getNetworkCounts(String userId) {
     // Check cache first
