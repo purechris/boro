@@ -370,54 +370,63 @@ class LendableCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: '');
     final lendableService = LendableService();
+    bool isPublic = false;
+
+    Future<void> submit(BuildContext dialogContext) async {
+      final name = controller.text.trim();
+      if (name.isEmpty) {
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
+          SnackBar(content: Text(l10n.enterBorrowerName)),
+        );
+        return;
+      }
+      Navigator.of(dialogContext).pop();
+      await lendableService.setBorrowedBy(lendable.id, name, isPublic: isPublic);
+      onBorrowChanged?.call();
+    }
 
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.lendToTitle),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            maxLength: _maxBorrowerNameLength,
-            decoration: InputDecoration(
-              hintText: l10n.lendToHint,
-            ),
-            onSubmitted: (_) async {
-              final name = controller.text.trim();
-              if (name.isEmpty) {
-                ScaffoldMessenger.of(dialogContext).showSnackBar(
-                  SnackBar(content: Text(l10n.enterBorrowerName)),
-                );
-                return;
-              }
-              Navigator.of(dialogContext).pop();
-              await lendableService.setBorrowedBy(lendable.id, name);
-              onBorrowChanged?.call();
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(l10n.cancel),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-            ),
-            TextButton(
-              child: Text(l10n.save),
-              onPressed: () async {
-                final name = controller.text.trim();
-                if (name.isEmpty) {
-                  ScaffoldMessenger.of(dialogContext).showSnackBar(
-                    SnackBar(content: Text(l10n.enterBorrowerName)),
-                  );
-                  return;
-                }
-                Navigator.of(dialogContext).pop();
-                await lendableService.setBorrowedBy(lendable.id, name);
-                onBorrowChanged?.call();
-              },
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: Text(l10n.lendToTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    maxLength: _maxBorrowerNameLength,
+                    decoration: InputDecoration(
+                      hintText: l10n.lendToHint,
+                    ),
+                    onSubmitted: (_) => submit(dialogContext),
+                  ),
+                  CheckboxListTile(
+                    value: isPublic,
+                    onChanged: (value) => setDialogState(() => isPublic = value ?? false),
+                    title: Text(l10n.showBorrowerNamePublicly),
+                    subtitle: Text(l10n.showBorrowerNamePubliclyHint),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text(l10n.cancel),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
+                TextButton(
+                  child: Text(l10n.save),
+                  onPressed: () => submit(dialogContext),
+                ),
+              ],
+            );
+          },
         );
       },
     );

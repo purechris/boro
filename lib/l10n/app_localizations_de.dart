@@ -48,6 +48,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get enterBorrowerName => 'Bitte einen Namen eingeben';
 
   @override
+  String get showBorrowerNamePublicly => 'Name öffentlich anzeigen';
+
+  @override
+  String get showBorrowerNamePubliclyHint =>
+      'Personen in deinem Netzwerk sehen, an wen der Artikel verliehen ist';
+
+  @override
   String get markAsReturned => 'Als zurückgegeben markieren';
 
   @override

@@ -13,6 +13,8 @@
   "lendToTitle": "Lend to...",
   "lendToHint": "Name",
   "enterBorrowerName": "Please enter a name",
+  "showBorrowerNamePublicly": "Show name publicly",
+  "showBorrowerNamePubliclyHint": "People in your network can see who borrowed this item",
   "markAsReturned": "Mark as returned",
   "borrowedBadge": "LENT",
   "borrowedBy": "Lent to {name}",

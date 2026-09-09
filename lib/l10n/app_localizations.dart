@@ -176,6 +176,18 @@ abstract class AppLocalizations {
   /// **'Bitte einen Namen eingeben'**
   String get enterBorrowerName;
 
+  /// No description provided for @showBorrowerNamePublicly.
+  ///
+  /// In de, this message translates to:
+  /// **'Name öffentlich anzeigen'**
+  String get showBorrowerNamePublicly;
+
+  /// No description provided for @showBorrowerNamePubliclyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen in deinem Netzwerk sehen, an wen der Artikel verliehen ist'**
+  String get showBorrowerNamePubliclyHint;
+
   /// No description provided for @markAsReturned.
   ///
   /// In de, this message translates to:

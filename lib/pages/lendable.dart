@@ -186,6 +186,7 @@ class _LendablePageState extends State<LendablePage> {
                     _buildImageSection(lendable),
                     _buildTitleWithCity(lendable),
                     _buildUserCard(user),
+                    _buildBorrowedBanner(lendable),
                     _buildArticleInformation(lendable, user),
                   ],
                 ),
@@ -323,6 +324,40 @@ class _LendablePageState extends State<LendablePage> {
       child: UserCard(
         user: user,
         onTap: () => _navigateToPublicProfile(user),
+      ),
+    );
+  }
+
+  Widget _buildBorrowedBanner(LendableModel lendable) {
+    if (!lendable.isBorrowerNameVisiblePublicly) return const SizedBox.shrink();
+
+    final scheme = Theme.of(context).colorScheme;
+    final borrowerName = (lendable.borrowedBy ?? '').trim();
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(_padding, _spacing, _padding, 0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: scheme.tertiaryContainer.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: scheme.tertiary.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.folder_shared, color: scheme.tertiary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)!.borrowedBy(borrowerName),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onTertiaryContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

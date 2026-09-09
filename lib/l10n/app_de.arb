@@ -16,6 +16,8 @@
   "lendToTitle": "Verleihen an...",
   "lendToHint": "Name",
   "enterBorrowerName": "Bitte einen Namen eingeben",
+  "showBorrowerNamePublicly": "Name öffentlich anzeigen",
+  "showBorrowerNamePubliclyHint": "Personen in deinem Netzwerk sehen, an wen der Artikel verliehen ist",
   "markAsReturned": "Als zurückgegeben markieren",
   "borrowedBadge": "VERLIEHEN",
   "borrowedBy": "Verliehen an {name}",

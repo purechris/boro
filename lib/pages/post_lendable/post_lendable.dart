@@ -442,6 +442,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
         imageFileName: finalImageFileName ?? '',
         created: widget.lendable?.created ?? DateTime.now().toUtc(),
         borrowedBy: widget.lendable?.borrowedBy,
+        borrowedByPublic: widget.lendable?.borrowedByPublic ?? false,
         countryCode: _useCustomLocation ? _selectedCountryCode : null,
         postalCode: _useCustomLocation ? trimmedPostalCode : null,
         latitude: _useCustomLocation ? _latitude : null,
