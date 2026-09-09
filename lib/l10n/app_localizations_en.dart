@@ -756,10 +756,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportDeveloperText =>
-      'If you like the app, you can support me with a donation :) Your support helps me cover server costs and continue developing the app. Click the button to make a donation via PayPal.';
+      'If you like the app, you can support me with a donation :) Your support helps me cover server costs and continue developing the app. Tap the link to make a donation via PayPal, or long-press it to copy it.';
 
   @override
   String get paypalDonateLink => 'PayPal Donation Link';
+
+  @override
+  String get paypalDonateLinkHint => 'Tap to open, long-press to copy';
+
+  @override
+  String get linkCopiedToClipboard => 'Link copied to clipboard';
 
   @override
   String get thanksForSupport => 'Thanks for your support!';

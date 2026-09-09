@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:verleihapp/utils/url_launcher_utils.dart';
+import 'package:verleihapp/utils/snackbar_utils.dart';
 import 'package:verleihapp/l10n/app_localizations.dart';
 
 class SupportDeveloperPage extends StatelessWidget {
@@ -8,6 +10,13 @@ class SupportDeveloperPage extends StatelessWidget {
   static const _coffeeUrl = 'https://www.paypal.me/ChristianBegert';
   static const _padding = 16.0;
   static const _spacing = 8.0;
+
+  Future<void> _copyDonationLinkToClipboard(BuildContext context) async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    await Clipboard.setData(const ClipboardData(text: _coffeeUrl));
+    if (!context.mounted) return;
+    SnackbarUtils.showSuccess(context, l10n.linkCopiedToClipboard);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,18 +36,29 @@ class SupportDeveloperPage extends StatelessWidget {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: _spacing * 3),
-            ElevatedButton.icon(
-              onPressed: () => UrlLauncherUtils.launchUrl(
+            InkWell(
+              onTap: () => UrlLauncherUtils.launchUrl(
                 _coffeeUrl,
                 context: context,
               ),
-              icon: const Icon(Icons.coffee),
-              label: Text(AppLocalizations.of(context)!.paypalDonateLink),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: _padding * 2,
-                  vertical: _spacing,
+              onLongPress: () => _copyDonationLinkToClipboard(context),
+              child: Text(
+                _coffeeUrl,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Theme.of(context).colorScheme.primary,
                 ),
+              ),
+            ),
+            const SizedBox(height: _spacing),
+            Text(
+              AppLocalizations.of(context)!.paypalDonateLinkHint,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
               ),
             ),
             const SizedBox(height: _spacing * 3),
