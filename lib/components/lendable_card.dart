@@ -109,8 +109,6 @@ class LendableCard extends StatelessWidget {
                   height: _imageHeight,
                   fit: BoxFit.cover,
                   placeholder: _buildPlaceholder(context),
-                  cacheWidth: _imageWidth.toInt() * 2, // Für Schärfe auf Retina-Displays
-                  cacheHeight: _imageHeight.toInt() * 2,
                 )
               : SizedBox(
                   width: _imageWidth,

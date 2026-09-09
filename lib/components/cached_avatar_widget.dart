@@ -61,12 +61,9 @@ class CachedAvatarWidget extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        // Cache configuration for optimal performance
+        // Cache configuration
         cacheKey: imageUrl,
-        // MemCache: Optimized for avatar size including pixel density
         memCacheWidth: cacheSize,
-        memCacheHeight: cacheSize,
-        // Konsistente Animation für alle Bilder (auch aus Cache)
         fadeInDuration: const Duration(milliseconds: 200),
       ),
     );
