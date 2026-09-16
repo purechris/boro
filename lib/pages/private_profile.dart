@@ -30,7 +30,9 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
 
   // State
   late Future<UserModel?> _currentUser;
-  late Future<List<Map<LendableModel, UserModel>>> _lendablesWithUsers;
+  List<Map<LendableModel, UserModel>> _lendables = [];
+  bool _isLoadingLendables = true;
+  bool _hasLendablesError = false;
 
   @override
   void initState() {
@@ -40,9 +42,26 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
 
   Future<void> _loadData() async {
     setState(() {
-      _lendablesWithUsers = _lendableService.getLendablesForPrivateProfile();
       _currentUser = _userService.getCurrentUser();
+      _isLoadingLendables = true;
+      _hasLendablesError = false;
     });
+    try {
+      final results = await _lendableService.getLendablesForPrivateProfile();
+      if (mounted) {
+        setState(() {
+          _lendables = results;
+          _isLoadingLendables = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingLendables = false;
+          _hasLendablesError = true;
+        });
+      }
+    }
   }
 
   Future<void> _refreshData() async {
@@ -50,10 +69,12 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
     await _loadData();
   }
 
-  void _onDelete(bool success, String? error) {
+  void _onDelete(bool success, String? error, String lendableId) {
     if (success) {
+      setState(() {
+        _lendables.removeWhere((map) => map.keys.first.id == lendableId);
+      });
       SnackbarUtils.showSuccess(context, AppLocalizations.of(context)!.articleDeletedSuccess);
-      _loadData();
     } else {
       SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
     }
@@ -221,29 +242,24 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
   Widget _buildBody() {
     return RefreshIndicator(
       onRefresh: _refreshData,
-      child: FutureBuilder<List<Map<LendableModel, UserModel>>>(
-        future: _lendablesWithUsers,
-        builder: (context, snapshot) {
-          return CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: _buildSlivers(snapshot),
-          );
-        },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: _buildSlivers(),
       ),
     );
   }
 
-  List<Widget> _buildSlivers(AsyncSnapshot<List<Map<LendableModel, UserModel>>> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
+  List<Widget> _buildSlivers() {
+    if (_isLoadingLendables) {
       return [const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))];
     }
-    if (snapshot.hasError) {
+    if (_hasLendablesError) {
       return [
         SliverToBoxAdapter(child: _buildProfileHeader()),
         SliverFillRemaining(child: ErrorStateWidget(onRetry: _loadData)),
       ];
     }
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+    if (_lendables.isEmpty) {
       return [
         SliverToBoxAdapter(child: _buildProfileHeader()),
         SliverFillRemaining(child: _buildEmptyState()),
@@ -254,7 +270,7 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
       SliverToBoxAdapter(child: SizedBox(height: _spacing)),
       SliverToBoxAdapter(
         child: LendableList(
-          lendables: snapshot.data!,
+          lendables: _lendables,
           title: AppLocalizations.of(context)!.myAds,
           showMenu: true,
           onDelete: _onDelete,
