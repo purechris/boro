@@ -157,6 +157,10 @@ class _MyAppState extends State<MyApp> {
         ),
         elevation: 0,
       ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+      ),
     );
   }
 }
