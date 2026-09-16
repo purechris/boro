@@ -37,32 +37,28 @@ class _NewsBannerWidgetState extends State<NewsBannerWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isDismissed || _bannerText == null) return const SizedBox.shrink();
-    final ColorScheme colors = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colors.primaryContainer,
+        color: Colors.green.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.campaign_outlined, color: colors.onPrimaryContainer, size: 20),
+          const Icon(Icons.campaign_outlined, color: Colors.green, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               _bannerText!,
-              style: TextStyle(
-                fontSize: 14,
-                color: colors.onPrimaryContainer,
-              ),
+              style: const TextStyle(fontSize: 14),
             ),
           ),
           GestureDetector(
             onTap: () => setState(() => _isDismissed = true),
-            child: Icon(Icons.close, size: 18, color: colors.onPrimaryContainer),
+            child: Icon(Icons.close, size: 18, color: Colors.green.withValues(alpha: 0.7)),
           ),
         ],
       ),
