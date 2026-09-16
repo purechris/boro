@@ -585,6 +585,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get alphabetical => 'Alphabetisch';
 
   @override
+  String get borrowedFirst => 'Verliehen zuerst';
+
+  @override
   String get all => 'Alle';
 
   @override

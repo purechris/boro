@@ -81,11 +81,12 @@ enum VisibilityMode {
   }
 }
 
-/// Enum for sorting modes on the start page.
+/// Enum for sorting modes on the start page and private profile.
 enum SortingMode {
   newest('newest'),
   oldest('oldest'),
-  alphabetical('alphabetical');
+  alphabetical('alphabetical'),
+  borrowedFirst('borrowed_first');
 
   final String value;
   const SortingMode(this.value);

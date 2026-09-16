@@ -1184,6 +1184,12 @@ abstract class AppLocalizations {
   /// **'Alphabetisch'**
   String get alphabetical;
 
+  /// No description provided for @borrowedFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Verliehen zuerst'**
+  String get borrowedFirst;
+
   /// No description provided for @all.
   ///
   /// In de, this message translates to:

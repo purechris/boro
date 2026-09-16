@@ -580,6 +580,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alphabetical => 'Alphabetical';
 
   @override
+  String get borrowedFirst => 'Lent first';
+
+  @override
   String get all => 'All';
 
   @override
