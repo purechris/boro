@@ -424,7 +424,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get directFriends => 'Direct Friends';
 
   @override
-  String get private => 'Private';
+  String get hiddenFromFriends => 'Hidden from friends';
+
+  @override
+  String get hiddenFromGroups => 'Hidden from groups';
 
   @override
   String version(String version, String platform) {

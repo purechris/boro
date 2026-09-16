@@ -152,7 +152,8 @@
   "visibility": "Visibility",
   "friendsOfFriends": "Friends of Friends",
   "directFriends": "Direct Friends",
-  "private": "Private",
+  "hiddenFromFriends": "Hidden from friends",
+  "hiddenFromGroups": "Hidden from groups",
   "version": "Version {version} ({platform})",
   "@version": {
     "placeholders": {

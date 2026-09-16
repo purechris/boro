@@ -884,11 +884,17 @@ abstract class AppLocalizations {
   /// **'Direkte Freunde'**
   String get directFriends;
 
-  /// No description provided for @private.
+  /// No description provided for @hiddenFromFriends.
   ///
   /// In de, this message translates to:
-  /// **'Privat'**
-  String get private;
+  /// **'Für Freunde verborgen'**
+  String get hiddenFromFriends;
+
+  /// No description provided for @hiddenFromGroups.
+  ///
+  /// In de, this message translates to:
+  /// **'Für Gruppen verborgen'**
+  String get hiddenFromGroups;
 
   /// No description provided for @version.
   ///
