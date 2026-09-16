@@ -1,3 +1,4 @@
+import 'package:verleihapp/config/constants.dart';
 import 'package:verleihapp/models/lendable_model.dart';
 import 'package:verleihapp/models/user_model.dart';
 import 'package:verleihapp/pages/settings/settings.dart';
@@ -30,7 +31,10 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
 
   // State
   late Future<UserModel?> _currentUser;
-  late Future<List<Map<LendableModel, UserModel>>> _lendablesWithUsers;
+  List<Map<LendableModel, UserModel>> _lendables = [];
+  bool _isLoadingLendables = true;
+  bool _hasLendablesError = false;
+  String _sorting = SortingMode.newest.value;
 
   @override
   void initState() {
@@ -40,9 +44,26 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
 
   Future<void> _loadData() async {
     setState(() {
-      _lendablesWithUsers = _lendableService.getLendablesForPrivateProfile();
       _currentUser = _userService.getCurrentUser();
+      _isLoadingLendables = true;
+      _hasLendablesError = false;
     });
+    try {
+      final results = await _lendableService.getLendablesForPrivateProfile();
+      if (mounted) {
+        setState(() {
+          _lendables = results;
+          _isLoadingLendables = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingLendables = false;
+          _hasLendablesError = true;
+        });
+      }
+    }
   }
 
   Future<void> _refreshData() async {
@@ -50,10 +71,12 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
     await _loadData();
   }
 
-  void _onDelete(bool success, String? error) {
+  void _onDelete(bool success, String? error, String lendableId) {
     if (success) {
+      setState(() {
+        _lendables.removeWhere((map) => map.keys.first.id == lendableId);
+      });
       SnackbarUtils.showSuccess(context, AppLocalizations.of(context)!.articleDeletedSuccess);
-      _loadData();
     } else {
       SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
     }
@@ -79,7 +102,12 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
   }
 
   void _navigateToEditProfile() {
-    NavigationUtils.navigateTo(context, const EditProfilePage());
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const EditProfilePage()))
+        .then((_) {
+      if (!mounted) return;
+      _loadData();
+    });
   }
 
   @override
@@ -88,6 +116,16 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
       appBar: _buildAppBar(),
       body: SafeArea(
         child: _buildBody(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'private_profile_fab',
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const PostLendablePage()),
+          ).then((_) => _loadData());
+        },
+        tooltip: AppLocalizations.of(context)!.navLend,
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -211,48 +249,185 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
   Widget _buildBody() {
     return RefreshIndicator(
       onRefresh: _refreshData,
-      child: FutureBuilder<List<Map<LendableModel, UserModel>>>(
-        future: _lendablesWithUsers,
-        builder: (context, snapshot) {
-          return CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: _buildSlivers(snapshot),
-          );
-        },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: _buildSlivers(),
       ),
     );
   }
 
-  List<Widget> _buildSlivers(AsyncSnapshot<List<Map<LendableModel, UserModel>>> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
+  List<Widget> _buildSlivers() {
+    if (_isLoadingLendables) {
       return [const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))];
     }
-    if (snapshot.hasError) {
+    if (_hasLendablesError) {
       return [
         SliverToBoxAdapter(child: _buildProfileHeader()),
         SliverFillRemaining(child: ErrorStateWidget(onRetry: _loadData)),
       ];
     }
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+    if (_lendables.isEmpty) {
       return [
         SliverToBoxAdapter(child: _buildProfileHeader()),
         SliverFillRemaining(child: _buildEmptyState()),
       ];
     }
+    final sortedLendables = _sortLendables(_lendables);
     return [
       SliverToBoxAdapter(child: _buildProfileHeader()),
       SliverToBoxAdapter(child: SizedBox(height: _spacing)),
+      SliverToBoxAdapter(child: _buildListHeader(context, sortedLendables.length)),
+      const SliverToBoxAdapter(child: SizedBox(height: 15)),
       SliverToBoxAdapter(
         child: LendableList(
-          lendables: snapshot.data!,
-          title: AppLocalizations.of(context)!.myAds,
+          lendables: sortedLendables,
           showMenu: true,
           onDelete: _onDelete,
           onBorrowChanged: _loadData,
           hideUserName: true,
         ),
       ),
+      const SliverToBoxAdapter(child: SizedBox(height: 96)),
     ];
+  }
+
+  List<Map<LendableModel, UserModel>> _sortLendables(
+      List<Map<LendableModel, UserModel>> items) {
+    final sorted = List<Map<LendableModel, UserModel>>.from(items);
+    if (_sorting == SortingMode.newest.value) {
+      sorted.sort(
+          (a, b) => b.keys.first.created.compareTo(a.keys.first.created));
+    } else if (_sorting == SortingMode.oldest.value) {
+      sorted.sort(
+          (a, b) => a.keys.first.created.compareTo(b.keys.first.created));
+    } else if (_sorting == SortingMode.alphabetical.value) {
+      sorted.sort((a, b) => a.keys.first.title
+          .toLowerCase()
+          .compareTo(b.keys.first.title.toLowerCase()));
+    } else if (_sorting == SortingMode.borrowedFirst.value) {
+      sorted.sort((a, b) {
+        final borrowedCompare = (b.keys.first.isBorrowed ? 1 : 0) -
+            (a.keys.first.isBorrowed ? 1 : 0);
+        if (borrowedCompare != 0) return borrowedCompare;
+        return b.keys.first.created.compareTo(a.keys.first.created);
+      });
+    }
+    return sorted;
+  }
+
+  Widget _buildListHeader(BuildContext context, int count) {
+    final l10n = AppLocalizations.of(context)!;
+    final bool isActive = _sorting != SortingMode.newest.value;
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 8),
+      child: Row(
+        children: [
+          Text(
+            '${l10n.myAds} ($count)',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: Icon(
+              Icons.sort,
+              color: isActive
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurface,
+            ),
+            tooltip: l10n.sorting,
+            onPressed: () => _showSortingBottomSheet(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSortingBottomSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: RadioGroup<String>(
+                groupValue: _sorting,
+                onChanged: (val) {
+                  if (val == null) return;
+                  setState(() => _sorting = val);
+                  Navigator.pop(context);
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      child: Text(
+                        l10n.sorting,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    ListTile(
+                      title: Text(l10n.newest),
+                      leading: Radio<String>(
+                        value: SortingMode.newest.value,
+                      ),
+                      onTap: () {
+                        setState(() => _sorting = SortingMode.newest.value);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      title: Text(l10n.oldest),
+                      leading: Radio<String>(
+                        value: SortingMode.oldest.value,
+                      ),
+                      onTap: () {
+                        setState(() => _sorting = SortingMode.oldest.value);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      title: Text(l10n.alphabetical),
+                      leading: Radio<String>(
+                        value: SortingMode.alphabetical.value,
+                      ),
+                      onTap: () {
+                        setState(
+                            () => _sorting = SortingMode.alphabetical.value);
+                        Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      title: Text(l10n.borrowedFirst),
+                      leading: Radio<String>(
+                        value: SortingMode.borrowedFirst.value,
+                      ),
+                      onTap: () {
+                        setState(
+                            () => _sorting = SortingMode.borrowedFirst.value);
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   AppBar _buildAppBar() {

@@ -20,6 +20,15 @@ class _LoginState extends State<Login> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +68,8 @@ class _LoginState extends State<Login> {
         TextField(
           controller: _emailController,
           autofillHints: const [AutofillHints.email],
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.emailAddress,
             border: OutlineInputBorder(),
@@ -76,7 +87,10 @@ class _LoginState extends State<Login> {
         TextField(
           obscureText: true,
           controller: _passwordController,
+          focusNode: _passwordFocusNode,
           autofillHints: const [AutofillHints.password],
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _submitForm(),
           decoration: InputDecoration(
             labelText: AppLocalizations.of(context)!.password,
             border: OutlineInputBorder(),

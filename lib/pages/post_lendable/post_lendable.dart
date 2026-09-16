@@ -21,8 +21,9 @@ import 'package:verleihapp/pages/post_lendable/components/post_location_form.dar
 
 class PostLendablePage extends StatefulWidget {
   final LendableModel? lendable;
-  
-  const PostLendablePage({super.key, this.lendable});
+  final bool openDetailOnSave;
+
+  const PostLendablePage({super.key, this.lendable, this.openDetailOnSave = true});
 
   @override
   State<PostLendablePage> createState() => _PostLendablePageState();
@@ -457,7 +458,7 @@ class _PostLendablePageState extends State<PostLendablePage> {
 
       if (mounted) {
         didNavigateAway = true;
-        if (widget.lendable == null) {
+        if (widget.openDetailOnSave) {
           NavigationUtils.navigateToReplacement(context, LendablePage(lendableId: lendableId));
         } else {
           Navigator.pop(context);

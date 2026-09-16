@@ -16,6 +16,7 @@ import 'package:verleihapp/pages/start/components/start_search_bar.dart';
 import 'package:verleihapp/pages/start/components/start_filter_section.dart';
 import 'package:verleihapp/pages/start/components/start_categories_section.dart';
 import 'package:verleihapp/pages/start/components/start_empty_states.dart';
+import 'package:verleihapp/components/news_banner_widget.dart';
 
 /// The start page of the app, displaying all available items.
 /// Contains search functionality, category filters, and sorting options.
@@ -229,6 +230,10 @@ class _StartPageState extends State<StartPage> {
   Widget _buildTopSection() {
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 16),
+          child: const NewsBannerWidget(),
+        ),
         StartSearchBar(
           searchController: _searchController,
           searchTerm: _searchTerm,

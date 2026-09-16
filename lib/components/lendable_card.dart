@@ -13,7 +13,7 @@ class LendableCard extends StatelessWidget {
   final UserModel user;
   final bool showMenu;
   final bool hideUserName;
-  final void Function(bool success, String? error)? onDelete;
+  final void Function(bool success, String? error, String lendableId)? onDelete;
   final VoidCallback? onBorrowChanged;
   final VoidCallback? onReturnFromDetail;
 
@@ -505,9 +505,9 @@ class LendableCard extends StatelessWidget {
     final LendableService lendableService = LendableService();
     try {
       await lendableService.deleteLendable(lendable.id);
-      onDelete?.call(true, null);
+      onDelete?.call(true, null, lendable.id);
     } catch (e) {
-      onDelete?.call(false, null);
+      onDelete?.call(false, null, lendable.id);
     }
   }
 }

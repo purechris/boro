@@ -11,7 +11,7 @@ class LendableList extends StatelessWidget {
   final int? itemCount;
   final bool showMenu;
   final bool hideUserName;
-  final void Function(bool success, String? error)? onDelete;
+  final void Function(bool success, String? error, String lendableId)? onDelete;
   final VoidCallback? onBorrowChanged;
   final VoidCallback? onReturnFromDetail;
   final Widget? emptyState;

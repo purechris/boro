@@ -71,7 +71,7 @@ class PostVisibilitySection extends StatelessWidget {
             children: [
               const Icon(Icons.lock),
               const SizedBox(width: 8),
-              Text(AppLocalizations.of(context)!.private),
+              Text(AppLocalizations.of(context)!.hiddenFromFriends),
             ],
           ),
         ),
@@ -111,13 +111,13 @@ class PostVisibilitySection extends StatelessWidget {
                 ],
               ),
             ),
-            const DropdownMenuItem(
+            DropdownMenuItem(
               value: 'none',
               child: Row(
                 children: [
-                  Icon(Icons.lock),
-                  SizedBox(width: 8),
-                  Text("Keine Gruppen"),
+                  const Icon(Icons.lock),
+                  const SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.hiddenFromGroups),
                 ],
               ),
             ),

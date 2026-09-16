@@ -212,7 +212,7 @@ class _LendablePageState extends State<LendablePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PostLendablePage(lendable: _loadedLendable),
+        builder: (context) => PostLendablePage(lendable: _loadedLendable, openDetailOnSave: false),
       ),
     ).then((_) {
       if (mounted) {
