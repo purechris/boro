@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:verleihapp/components/user_card.dart';
 import 'package:verleihapp/models/group_model.dart';
 import 'package:verleihapp/pages/groups/group_articles_page.dart';
@@ -243,6 +244,12 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 Row(
                   children: [
                     IconButton.filledTonal(
+                      onPressed: _userService.isDemoUser() ? null : _shareGroupCode,
+                      icon: const Icon(Icons.share, size: 20),
+                      tooltip: l10n.share,
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
                       onPressed: _userService.isDemoUser() ? null : _copyGroupCode,
                       icon: const Icon(Icons.copy, size: 20),
                       tooltip: l10n.copy,
@@ -372,6 +379,19 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
       if (!mounted) return;
       SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
     }
+  }
+
+  Future<void> _shareGroupCode() async {
+    try {
+      final String shareText = AppLocalizations.of(context)!.shareGroupCodeText(
+        _group.name,
+        _group.groupCode,
+      );
+
+      await SharePlus.instance.share(
+        ShareParams(text: shareText),
+      );
+    } catch (_) {}
   }
 
   Future<void> _renewGroupCode() async {

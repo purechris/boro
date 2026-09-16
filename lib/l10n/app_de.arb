@@ -200,6 +200,14 @@
   "requestRejected": "Freundschaftsanfrage abgelehnt",
   "requestCancelled": "Freundschaftsanfrage storniert",
   "shareFriendCodeText": "Teile deinen Freundescode z. B. in einer Gruppe mit Freunden, Kollegen oder Nachbarn, um dein Netzwerk zu erweitern!",
+  "shareFriendCodeMessage": "Hey! 👋\n\nDu kannst mich bei der Boro-App mit diesem Code als Freund hinzufügen:\n\n{friendCode}\n\nBoro ist eine App zum Teilen und Verleihen mit Freunden. Weitere Infos findest du auf https://boro-app.de",
+  "@shareFriendCodeMessage": {
+    "placeholders": {
+      "friendCode": {
+        "type": "String"
+      }
+    }
+  },
   "friendCodeCopied": "Freundescode in die Zwischenablage kopiert",
   "noAdsYet": "Keine Anzeigen vorhanden",
   "userHasNoAds": "Dieser Benutzer hat noch keine Anzeigen erstellt",
@@ -407,6 +415,17 @@
   "groupDescription": "Gruppenbeschreibung",
   "groupCode": "Gruppencode",
   "groupCodeCopied": "Gruppencode kopiert",
+  "shareGroupCodeText": "Hey! 👋\n\nTritt meiner Gruppe \"{groupName}\" in der Boro-App bei, indem du diesen Code eingibst:\n\n{groupCode}\n\nBoro ist eine App zum Teilen und Verleihen mit Freunden. Weitere Infos findest du auf https://boro-app.de",
+  "@shareGroupCodeText": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      },
+      "groupCode": {
+        "type": "String"
+      }
+    }
+  },
   "renewGroupCode": "Gruppencode erneuern",
   "groupCodeRenewed": "Gruppencode erneuert",
   "members": "Mitglieder",

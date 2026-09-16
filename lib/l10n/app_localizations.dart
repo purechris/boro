@@ -1094,6 +1094,12 @@ abstract class AppLocalizations {
   /// **'Teile deinen Freundescode z. B. in einer Gruppe mit Freunden, Kollegen oder Nachbarn, um dein Netzwerk zu erweitern!'**
   String get shareFriendCodeText;
 
+  /// No description provided for @shareFriendCodeMessage.
+  ///
+  /// In de, this message translates to:
+  /// **'Hey! 👋\n\nDu kannst mich bei der Boro-App mit diesem Code als Freund hinzufügen:\n\n{friendCode}\n\nBoro ist eine App zum Teilen und Verleihen mit Freunden. Weitere Infos findest du auf https://boro-app.de'**
+  String shareFriendCodeMessage(String friendCode);
+
   /// No description provided for @friendCodeCopied.
   ///
   /// In de, this message translates to:
@@ -2143,6 +2149,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Gruppencode kopiert'**
   String get groupCodeCopied;
+
+  /// No description provided for @shareGroupCodeText.
+  ///
+  /// In de, this message translates to:
+  /// **'Hey! 👋\n\nTritt meiner Gruppe \"{groupName}\" in der Boro-App bei, indem du diesen Code eingibst:\n\n{groupCode}\n\nBoro ist eine App zum Teilen und Verleihen mit Freunden. Weitere Infos findest du auf https://boro-app.de'**
+  String shareGroupCodeText(String groupName, String groupCode);
 
   /// No description provided for @renewGroupCode.
   ///

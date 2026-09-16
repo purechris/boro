@@ -197,6 +197,14 @@
   "requestRejected": "Friend request rejected",
   "requestCancelled": "Friend request cancelled",
   "shareFriendCodeText": "Share your friend code e.g. in a group with friends, colleagues or neighbors to expand your network!",
+  "shareFriendCodeMessage": "Hey! 👋\n\nYou can add me as a friend on the Boro app with this code:\n\n{friendCode}\n\nBoro is an app for sharing and lending with friends. More info at https://boro-app.de",
+  "@shareFriendCodeMessage": {
+    "placeholders": {
+      "friendCode": {
+        "type": "String"
+      }
+    }
+  },
   "friendCodeCopied": "Friend code copied to clipboard",
   "noAdsYet": "No ads available",
   "userHasNoAds": "This user has not created any ads yet",
@@ -404,6 +412,17 @@
   "groupDescription": "Group Description",
   "groupCode": "Group Code",
   "groupCodeCopied": "Group code copied",
+  "shareGroupCodeText": "Hey! 👋\n\nJoin my group \"{groupName}\" in the Boro app by entering this code:\n\n{groupCode}\n\nBoro is an app for sharing and lending with friends. More info at https://boro-app.de",
+  "@shareGroupCodeText": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      },
+      "groupCode": {
+        "type": "String"
+      }
+    }
+  },
   "renewGroupCode": "Renew Group Code",
   "groupCodeRenewed": "Group code renewed",
   "members": "Members",

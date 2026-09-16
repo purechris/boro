@@ -533,6 +533,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Share your friend code e.g. in a group with friends, colleagues or neighbors to expand your network!';
 
   @override
+  String shareFriendCodeMessage(String friendCode) {
+    return 'Hey! 👋\n\nYou can add me as a friend on the Boro app with this code:\n\n$friendCode\n\nBoro is an app for sharing and lending with friends. More info at https://boro-app.de';
+  }
+
+  @override
   String get friendCodeCopied => 'Friend code copied to clipboard';
 
   @override
@@ -1075,6 +1080,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupCodeCopied => 'Group code copied';
+
+  @override
+  String shareGroupCodeText(String groupName, String groupCode) {
+    return 'Hey! 👋\n\nJoin my group \"$groupName\" in the Boro app by entering this code:\n\n$groupCode\n\nBoro is an app for sharing and lending with friends. More info at https://boro-app.de';
+  }
 
   @override
   String get renewGroupCode => 'Renew Group Code';

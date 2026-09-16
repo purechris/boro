@@ -538,6 +538,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Teile deinen Freundescode z. B. in einer Gruppe mit Freunden, Kollegen oder Nachbarn, um dein Netzwerk zu erweitern!';
 
   @override
+  String shareFriendCodeMessage(String friendCode) {
+    return 'Hey! 👋\n\nDu kannst mich bei der Boro-App mit diesem Code als Freund hinzufügen:\n\n$friendCode\n\nBoro ist eine App zum Teilen und Verleihen mit Freunden. Weitere Infos findest du auf https://boro-app.de';
+  }
+
+  @override
   String get friendCodeCopied => 'Freundescode in die Zwischenablage kopiert';
 
   @override
@@ -1088,6 +1093,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get groupCodeCopied => 'Gruppencode kopiert';
+
+  @override
+  String shareGroupCodeText(String groupName, String groupCode) {
+    return 'Hey! 👋\n\nTritt meiner Gruppe \"$groupName\" in der Boro-App bei, indem du diesen Code eingibst:\n\n$groupCode\n\nBoro ist eine App zum Teilen und Verleihen mit Freunden. Weitere Infos findest du auf https://boro-app.de';
+  }
 
   @override
   String get renewGroupCode => 'Gruppencode erneuern';

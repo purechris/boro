@@ -342,13 +342,9 @@ class _FriendListPageState extends State<FriendlistPage> with SingleTickerProvid
         SnackbarUtils.showError(context, AppLocalizations.of(context)!.errorOccurred);
         return;
       }
-      
-      final String shareText = 'Hey! 👋\n\n'
-          'Du kannst mich bei der Boro-App mit diesem Code als Freund hinzufügen:\n\n'
-          '$friendCode\n\n'
-          'Boro ist eine App zum Teilen und Verleihen mit Freunden. '
-          'Weitere Infos findest du auf https://boro-app.de';
-      
+
+      final String shareText = AppLocalizations.of(context)!.shareFriendCodeMessage(friendCode);
+
       await SharePlus.instance.share(
         ShareParams(
           text: shareText,
