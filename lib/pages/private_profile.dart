@@ -89,6 +89,16 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
       body: SafeArea(
         child: _buildBody(),
       ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'private_profile_fab',
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const PostLendablePage()),
+          ).then((_) => _loadData());
+        },
+        tooltip: AppLocalizations.of(context)!.navLend,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
