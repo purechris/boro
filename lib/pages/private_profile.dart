@@ -100,7 +100,12 @@ class _PrivateProfilePageState extends State<PrivateProfilePage> {
   }
 
   void _navigateToEditProfile() {
-    NavigationUtils.navigateTo(context, const EditProfilePage());
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const EditProfilePage()))
+        .then((_) {
+      if (!mounted) return;
+      _loadData();
+    });
   }
 
   @override
